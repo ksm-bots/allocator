@@ -35,7 +35,12 @@ type Seller = {
   notes: string;
 };
 
-type PersonResult = Seller & {
+type PersonResult = {
+  id: number;
+  name: string;
+  qty: number;
+  right3Limit: string;
+  notes: string;
   assignedQty: number;
   uniqueQty: number;
   repeatQty: number;
@@ -54,8 +59,6 @@ type AllocationResult = {
 };
 
 const GAS_PLACEHOLDER = "PASTE_YOUR_GAS_EXEC_URL_HERE";
-const HERO_TEXTURE = "/manus-storage/loneeddy-hero-reference_9db18123.png";
-const MARK = "/manus-storage/loneeddy-mark_ffcbd419.png";
 
 const STARTERS: Seller[] = [
   { id: 1, name: "PT", qty: 1200, right3Limit: "2", notes: "Primary pool" },
@@ -192,8 +195,20 @@ export default function Home() {
     if (configuredEndpoint) {
       setEndpoint(configuredEndpoint);
       setEndpointDraft(configuredEndpoint);
-      setIsConnected(true);
-      setConnectionMessage("Endpoint loaded from URL");
+      setIsConnected(false);
+      setConnectionMessage("Checking saved endpoint…");
+      void jsonp(configuredEndpoint, { action: "status" })
+        .then((data) => {
+          setIsConnected(true);
+          setStockTotal(data.totalTickets || 0);
+          setGroups(data.totalGroups || 0);
+          setLargestGroup(data.largestGroup || 0);
+          setConnectionMessage("Connected to Group!A:J");
+        })
+        .catch(() => {
+          setIsConnected(false);
+          setConnectionMessage("Saved endpoint could not be reached");
+        });
     }
   }, []);
 
@@ -275,8 +290,17 @@ export default function Home() {
           includeLeftover: includeLeftover ? "1" : "0",
           sheetName: sheetName.trim() || "Distribution",
         });
-        setResult(data);
-        setMessage({ text: `Saved to ${data.sheetName || sheetName}. Batch ${data.batchId}.`, tone: "ok" });
+        const normalized: AllocationResult = {
+          ...data,
+          people: (data.people || []).map((person: any, index: number) => ({
+            ...person,
+            id: sellers[index]?.id ?? index + 1,
+            notes: sellers[index]?.notes ?? "",
+            right3Limit: String(person.right3Limit ?? sellers[index]?.right3Limit ?? "0"),
+          })),
+        };
+        setResult(normalized);
+        setMessage({ text: `Saved to ${normalized.sheetName || sheetName}. Batch ${normalized.batchId}.`, tone: "ok" });
       }
     } catch (error) {
       setMessage({ text: error instanceof Error ? error.message : "Allocation failed.", tone: "error" });
@@ -297,7 +321,7 @@ export default function Home() {
       setMessage({ text: "Run an allocation before exporting a CSV.", tone: "error" });
       return;
     }
-    const rows = [["Seller", "Requested", "Unique", "Repeated", "Right-3 limit"], ...result.people.map((person) => [person.name, person.qty, person.uniqueQty, person.repeatQty, person.right3Limit === "0" ? "AUTO" : person.right3Limit])];
+    const rows = [["Seller", "Requested", "Unique", "Repeated", "Right-3 limit"], ...result.people.map((person) => [person.name, person.qty, person.uniqueQty, person.repeatQty, String(person.right3Limit) === "0" ? "AUTO" : person.right3Limit])];
     rows.push(["Leftover", result.leftoverQty, "", "", ""]);
     const csv = rows.map((row) => row.map((value) => `"${String(value).replaceAll('"', '""')}"`).join(",")).join("\n");
     const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
@@ -323,7 +347,7 @@ export default function Home() {
             {mobileNavOpen ? <X size={18} /> : <Menu size={18} />}
           </button>
           <button className="brand-lockup" onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })} aria-label="Back to top">
-            <span className="brand-mark"><img src={MARK} alt="" /></span>
+            <span className="brand-mark" aria-hidden="true"><span className="brand-glyph">LE</span></span>
             <span>
               <strong>LoneEddy</strong>
               <small>Allocator / desk 01</small>
@@ -393,7 +417,7 @@ export default function Home() {
             <Metric label="Run status" value={status} detail={result ? `Batch ${result.batchId}` : "Configure sellers, then run"} tone={statusTone} icon={result ? <Check size={16} /> : <Activity size={16} />} />
           </section>
 
-          <section className="hero-note" style={{ backgroundImage: `linear-gradient(90deg, rgba(33,35,29,.96) 0%, rgba(33,35,29,.76) 49%, rgba(33,35,29,.24) 100%), url(${HERO_TEXTURE})` }}>
+          <section className="hero-note" style={{ backgroundImage: "radial-gradient(circle at 82% 22%, rgba(214,244,91,.24), transparent 26%), repeating-radial-gradient(ellipse at 74% 38%, transparent 0 28px, rgba(251,250,246,.08) 29px 30px), linear-gradient(115deg, #21231d 0%, #373c2d 58%, #20231c 100%)" }}>
             <div>
               <span className="eyebrow eyebrow-light">Why this view is better</span>
               <h3>The important decision is visible before the first ticket moves.</h3>
@@ -480,7 +504,7 @@ export default function Home() {
             <div className="signal-stat"><span>Largest group</span><b>{largestGroup}</b></div><div className="signal-stat"><span>Mode</span><b>R3 + R2</b></div><div className="signal-stat"><span>Output</span><b>{sheetName}</b></div>
           </section>
 
-          <footer className="page-footer"><span><img src={MARK} alt="" /> LoneEddy Allocator</span><span>Designed for fair, explainable distribution.</span><span>Build v7 · desk 01</span></footer>
+          <footer className="page-footer"><span><span className="footer-mark" aria-hidden="true">LE</span> LoneEddy Allocator</span><span>Designed for fair, explainable distribution.</span><span>Build v7 · desk 01</span></footer>
         </section>
       </main>
     </div>

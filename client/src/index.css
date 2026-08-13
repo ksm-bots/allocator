@@ -71,7 +71,7 @@ button:active:not(:disabled) { transform: scale(0.97); }
 .brand-lockup strong { display: block; font: 700 17px/1 "Space Grotesk", sans-serif; letter-spacing: -0.04em; }
 .brand-lockup small { display: block; margin-top: 4px; color: var(--ink-soft); font-size: 10px; letter-spacing: .12em; text-transform: uppercase; }
 .brand-mark { display: grid; width: 39px; height: 39px; place-items: center; border: 1px solid var(--charcoal); border-radius: 50%; background: var(--chartreuse); overflow: hidden; }
-.brand-mark img { width: 31px; height: 31px; object-fit: contain; mix-blend-mode: multiply; }
+.brand-glyph { font: 800 11px/1 "Space Grotesk", sans-serif; letter-spacing: -.06em; color: var(--charcoal); }
 .main-nav { display: flex; align-items: center; gap: 20px; flex: 1; margin-left: 32px; }
 .nav-link { display: inline-flex; align-items: center; gap: 7px; position: relative; padding: 29px 0 26px; border: 0; border-bottom: 2px solid transparent; background: transparent; color: var(--ink-soft); font-size: 12px; font-weight: 700; letter-spacing: .015em; }
 .nav-link:hover, .nav-link.is-active { color: var(--charcoal); }
@@ -268,7 +268,7 @@ td { border-top: 1px solid var(--border); }
 .signal-stat b { margin-top: 6px; font: 700 14px "Space Grotesk", sans-serif; }
 .page-footer { display: flex; align-items: center; justify-content: space-between; gap: 14px; padding: 22px 0 8px; color: var(--ink-soft); font-size: 10px; }
 .page-footer span:first-child { display: flex; align-items: center; gap: 7px; color: var(--charcoal); font-weight: 800; }
-.page-footer img { width: 17px; height: 17px; }
+.footer-mark { display: inline-grid; width: 18px; height: 18px; place-items: center; border: 1px solid var(--charcoal); border-radius: 50%; background: var(--chartreuse); font: 800 6px/1 "Space Grotesk", sans-serif; }
 .spin { animation: spin 800ms linear infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }
 
@@ -315,7 +315,7 @@ td { border-top: 1px solid var(--border); }
 @media (max-width: 560px) {
   .topbar-inner, .main-layout { width: calc(100% - 24px); }
   .brand-mark { width: 34px; height: 34px; }
-  .brand-mark img { width: 27px; height: 27px; }
+  .brand-glyph { font-size: 10px; }
   .brand-lockup small { font-size: 8px; }
   .button-signal { padding: 0 8px; }
   .metric-grid { gap: 7px; }
