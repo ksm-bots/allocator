@@ -173,7 +173,7 @@ Source: <b>Group!A2:J</b> · Output: <b>Allocation</b> + <b>Distribution_Result<
     <div>
       <h2>Customers</h2>
       <div class="muted">
-        PT rule: use the lowest repetition possible. Example 500 unique + PT 1000 ≈ ×2 each; 501 unique + PT 1000 = mostly ×2 with two ×1; PT above that uses ×3 only for the small number still needed. Other customers: exact Right3 ×1. </div>
+        PT FIRST: Round 1 gives PT one ticket from every unique Right3. Round 2 gives one more from every Right3 with a real second ticket. Round 3 gives only the remaining amount PT needs, again using different Right3 values. Other customers are allocated only after PT is complete. </div>
     </div>
     <button onclick="addCustomer()">+ Add Customer</button>
   </div>
@@ -497,7 +497,7 @@ function renderResults(list){
             <div class="muted">
               Target ${fmt(c.target)} · Assigned ${fmt(c.assigned)} ·
               Unique Right3 ${fmt(c.uniqueRight3)} ·
-              Right3 rule ${String(c.name).trim().toUpperCase()==='PT'?'PT: minimum repetition (×1 → ×2 → only-needed ×3)':'Exact Right3 ×1 only'} ·
+              Right3 rule ${String(c.name).trim().toUpperCase()==='PT'?'PT first: unique round → second-copy round → partial third round':'Exact Right3 ×1 only'} ·
               Unique Right3 ${fmt(c.uniqueRight3)} ·
               Max same Right3 used ${c.maxRight3ActuallyUsed} ·
               ${String(c.name).trim().toUpperCase()==='PT'
