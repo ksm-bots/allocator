@@ -173,7 +173,7 @@ Source: <b>Group!A2:J</b> · Output: <b>Allocation</b> + <b>Distribution_Result<
     <div>
       <h2>Customers</h2>
       <div class="muted">
-        Rule: PT is the main customer and may use the 2nd/3rd physical copy of a Right3 when needed. Every other customer gets each exact Right3 only once. They may still have many different Right3 values inside the same 0xx–9xx group, like your example.
+        Exact Right3 stock depth is used: e.g. 013×7, 003×6, 011×5, … Single×1. PT uses pass 1, pass 2, pass 3 by real stock depth. Every other customer may receive each exact Right3 only once.
       </div>
     </div>
     <button onclick="addCustomer()">+ Add Customer</button>
@@ -185,7 +185,7 @@ Source: <b>Group!A2:J</b> · Output: <b>Allocation</b> + <b>Distribution_Result<
       <tr>
         <th>Name</th>
         <th>Quantity</th>
-        <th>Right3 Limit</th>
+        <th>PT Start Limit</th>
         <th>Allow Extra</th>
         <th>Priority</th>
         <th>Active</th>
@@ -498,8 +498,9 @@ function renderResults(list){
             <div class="muted">
               Target ${fmt(c.target)} · Assigned ${fmt(c.assigned)} ·
               Unique Right3 ${fmt(c.uniqueRight3)} ·
-              Right3 rule ${String(c.name).trim().toUpperCase()==='PT'?'PT multi-copy by real stock':'Exact Right3 ×1 only'} ·
-              Max exact Right3 used ${c.maxRight3ActuallyUsed} ·
+              Right3 rule ${String(c.name).trim().toUpperCase()==='PT'?'PT by exact stock depth':'Exact Right3 ×1 only'} ·
+              Unique Right3 ${fmt(c.uniqueRight3)} ·
+              Max same Right3 used ${c.maxRight3ActuallyUsed} ·
               ${(c.hasAllRight3Groups0to9 || Number(c.target)<10)
                 ? '<span class="good">Right3 groups 0–9 ✓</span>'
                 : '<span class="bad">Missing Right3 groups: '+(c.missingRight3Groups||[]).join(',')+'</span>'}
