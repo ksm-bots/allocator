@@ -173,7 +173,7 @@ Source: <b>Group!A2:J</b> · Output: <b>Allocation</b> + <b>Distribution_Result<
     <div>
       <h2>Customers</h2>
       <div class="muted">
-        Global planner: every non-PT customer has exact Right3 ×1 and is balanced across 0xx–9xx. PT uses the remaining real stock, preferring unique Right3 first, then 2nd/3rd copies as needed. </div>
+        Right3 rotation: PT gets the first 2 physical copies of each exact Right3 when needed, then each other customer can get that Right3 once. Any copies still left may return to PT only if PT is short. </div>
     </div>
     <button onclick="addCustomer()">+ Add Customer</button>
   </div>
@@ -497,7 +497,7 @@ function renderResults(list){
             <div class="muted">
               Target ${fmt(c.target)} · Assigned ${fmt(c.assigned)} ·
               Unique Right3 ${fmt(c.uniqueRight3)} ·
-              Right3 rule ${String(c.name).trim().toUpperCase()==='PT'?'PT: unique first → extra real copies':'Exact Right3 ×1 only'} ·
+              Right3 rule ${String(c.name).trim().toUpperCase()==='PT'?'PT first ×2 → customers ×1 → PT extra':'Exact Right3 ×1 only'} ·
               Unique Right3 ${fmt(c.uniqueRight3)} ·
               Max same Right3 used ${c.maxRight3ActuallyUsed} ·
               ${(c.hasAllRight3Hundreds || Number(c.target)<10)
