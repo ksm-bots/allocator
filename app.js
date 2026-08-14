@@ -13,9 +13,9 @@
 
   const state = {
     sellers: STARTERS.map(s => ({ ...s })),
-    stockTotal: 6240,
-    groups: 20,
-    largestGroup: 31,
+    stockTotal: 0,
+    groups: 0,
+    largestGroup: 0,
     endpoint: "",
     isConnected: false,
     isRunning: false,
@@ -93,31 +93,6 @@
     });
   }
 
-  function buildDemoResult() {
-    const stock = state.stockTotal;
-    let pointer = 0;
-    const people = state.sellers.map((seller, sellerIndex) => {
-      const preview = Array.from({ length: Math.min(Number(seller.qty), 18) }, (_, index) => {
-        const raw = (100000 + ((pointer + index) * 137 + sellerIndex * 1031) % 899999).toString();
-        return raw.padStart(6, "0");
-      });
-      pointer += Number(seller.qty);
-      const uniqueQty = Math.min(Number(seller.qty), Math.max(0, stock - (pointer - Number(seller.qty))));
-      return { ...seller, assignedQty: Number(seller.qty), uniqueQty, repeatQty: Number(seller.qty) - uniqueQty, preview };
-    });
-    const total = demand();
-    return {
-      batchId: `DEMO-${new Date().toISOString().slice(0, 10).replaceAll("-", "")}-A1`,
-      sheetName: state.sheetName,
-      totalRequested: total,
-      totalUniqueStock: stock,
-      uniqueUsed: Math.min(stock, total),
-      repeatTotal: Math.max(0, total - stock),
-      leftoverQty: Math.max(0, stock - total),
-      people,
-    };
-  }
-
   function showMessage(text, tone = "ok") {
     const box = $("message-container");
     if (!text) { box.innerHTML = ""; return; }
@@ -168,7 +143,7 @@
     setText("largest-group", fmt(state.largestGroup));
     setText("bottom-output", state.sheetName || "Distribution");
 
-    const btn = $("run-btn"); btn.disabled = state.isRunning || !allocationReady();
+    const btn = $("run-btn"); btn.disabled = state.isRunning || !allocationReady() || !state.isConnected;
     setText("run-label", state.isRunning ? "Running" : "Run allocation");
     setText("review-step-number", state.result ? "✓" : "2");
     setText("review-step-detail", state.result ? "Preview ready to inspect" : "Waiting for a run");
@@ -179,8 +154,8 @@
   function renderSource() {
     $("status-pill").classList.toggle("is-connected", state.isConnected);
     $("status-pill").classList.toggle("is-demo", !state.isConnected);
-    setText("status-pill-label", state.isConnected ? "Live source" : "Review mode");
-    setText("source-name", state.isConnected ? "Google Sheet / Group" : "Demo stock / Group");
+    setText("status-pill-label", state.isConnected ? "Live source" : "Not connected");
+    setText("source-name", state.isConnected ? "Google Sheet / Group" : "Google Sheet / not connected");
     setText("connect-label", state.isConnected ? "Refresh source" : "Connect source");
   }
 
@@ -188,7 +163,7 @@
     const box = $("result-container");
     if (!state.result) {
       box.innerHTML = `<div class="empty-preview"><div class="empty-orbit"><span></span><span></span><span></span></div><span class="eyebrow">No run in this desk</span><h4>The result surface is ready.</h4><p>Review the seller rows, then run a fair allocation to see ticket previews and repeat exposure.</p><button class="button button-dark" id="empty-run-btn"><span class="icon-text">▶</span> Run allocation</button></div>`;
-      const er = $("empty-run-btn"); if (er) { er.disabled = state.isRunning || !allocationReady(); er.addEventListener("click", allocate); }
+      const er = $("empty-run-btn"); if (er) { er.disabled = state.isRunning || !allocationReady() || !state.isConnected; er.addEventListener("click", allocate); }
       return;
     }
     const r = state.result;
@@ -202,8 +177,8 @@
 
   async function loadStatus(nextEndpoint) {
     if (!nextEndpoint || nextEndpoint.includes(GAS_PLACEHOLDER)) {
-      state.isConnected = false; state.stockTotal = 6240; state.groups = 20; state.largestGroup = 31;
-      setText("connection-message", "Demo stock loaded for review"); renderSource(); renderMetrics(); return false;
+      state.isConnected = false; state.stockTotal = 0; state.groups = 0; state.largestGroup = 0;
+      setText("connection-message", "Connect Apps Script to load Google Sheet stock"); renderSource(); renderMetrics(); return false;
     }
     const normalized = normalizeGasUrl(nextEndpoint);
     if (!normalized) {
@@ -226,6 +201,7 @@
       return true;
     } catch (e) {
       state.isConnected = false;
+      state.endpoint = "";
       localStorage.removeItem("loneeddy-gas-url");
       setText("connection-message", "Apps Script needs attention");
       setText("endpoint-diagnostic", "Connection failed. Click Test /exec. If you see a Google sign-in/access page, redeploy the Web app with access that allows this browser. If you see old output, deploy a new version of Code.gs.");
@@ -242,27 +218,29 @@
     if (invalid) { showMessage(`${invalid.name || "Every seller"} needs a name and a quota of at least 1.`, "error"); return; }
     const outName = (state.sheetName || "Distribution").trim();
     if (PROTECTED_SHEETS.has(outName.toLowerCase())) { showMessage(`“${outName}” is a protected source/log sheet. Choose another Result sheet name, such as Distribution.`, "error"); return; }
+    if (!state.isConnected || !state.endpoint) {
+      showMessage("Google Sheet is not connected. Paste the Apps Script /exec URL, click Connect source, and confirm Live source before running.", "error");
+      jumpTo("connection");
+      return;
+    }
 
     state.isRunning = true; state.result = null; showMessage(""); renderMetrics(); renderResult();
     try {
-      if (!state.endpoint || state.endpoint.includes(GAS_PLACEHOLDER)) {
-        await new Promise(r => setTimeout(r, 350));
-        state.result = buildDemoResult();
-        showMessage("Demo allocation ready. Connect Apps Script when you are ready to save to Google Sheets.", "ok");
-      } else {
-        const data = await jsonp(state.endpoint, {
-          action: "allocateBatch",
-          people: JSON.stringify(state.sellers.map(({ name, qty, right3Limit }) => ({ name, qty: Number(qty), right3Limit: Number(right3Limit) || 0 }))),
-          repeat: state.repeat,
-          includeLeftover: state.includeLeftover ? "1" : "0",
-          sheetName: outName,
-        });
-        state.result = {
-          ...data,
-          people: (data.people || []).map((person, index) => ({ ...person, id: state.sellers[index]?.id ?? index + 1, notes: state.sellers[index]?.notes ?? "", right3Limit: String(person.right3Limit ?? state.sellers[index]?.right3Limit ?? "0") })),
-        };
-        showMessage(`Saved to ${state.result.sheetName || outName}. Batch ${state.result.batchId}.`, "ok");
+      const data = await jsonp(state.endpoint, {
+        action: "allocateBatch",
+        people: JSON.stringify(state.sellers.map(({ name, qty, right3Limit }) => ({ name, qty: Number(qty), right3Limit: Number(right3Limit) || 0 }))),
+        repeat: state.repeat,
+        includeLeftover: state.includeLeftover ? "1" : "0",
+        sheetName: outName,
+      });
+      if (!data.writeVerified || !data.saved) {
+        throw new Error("Apps Script returned an allocation but did not verify the Google Sheet write. Redeploy the v10 Code.gs and try Test Sheet Write.");
       }
+      state.result = {
+        ...data,
+        people: (data.people || []).map((person, index) => ({ ...person, id: state.sellers[index]?.id ?? index + 1, notes: state.sellers[index]?.notes ?? "", right3Limit: String(person.right3Limit ?? state.sellers[index]?.right3Limit ?? "0") })),
+      };
+      showMessage(`✓ Google Sheet saved and verified: ${state.result.sheetName || outName} (${fmt(data.savedRows)} rows × ${fmt(data.savedColumns)} columns). Batch ${state.result.batchId}.`, "ok");
     } catch (e) {
       showMessage(e instanceof Error ? e.message : "Allocation failed.", "error");
     } finally {
@@ -310,6 +288,19 @@
       if (!normalized) { showMessage("Paste a valid Apps Script /exec URL first.", "error"); return; }
       const test = new URL(normalized); test.searchParams.set("action", "status"); test.searchParams.set("_", String(Date.now()));
       window.open(test.toString(), "_blank", "noopener,noreferrer");
+    });
+    $("write-test-btn").addEventListener("click", async () => {
+      const normalized = normalizeGasUrl($("endpoint-input").value.trim());
+      if (!normalized) { showMessage("Paste a valid Apps Script /exec URL first.", "error"); return; }
+      showMessage("Testing Google Sheet write permission…", "ok");
+      try {
+        const data = await jsonp(normalized, { action: "writeTest" });
+        if (!data.writeVerified) throw new Error("The write test did not verify.");
+        showMessage(`Google Sheet write test passed: ${data.spreadsheetName || "target spreadsheet"}. Temporary test sheet was written, verified, and removed.`, "ok");
+        setText("endpoint-diagnostic", `Write permission verified at ${data.checkedAt || "now"}. You can run allocation and it will save to the Result sheet.`);
+      } catch (e) {
+        showMessage(e instanceof Error ? e.message : "Google Sheet write test failed.", "error");
+      }
     });
     $("default-limit").addEventListener("change", e => { state.defaultLimit=e.target.value; });
     $("repeat-mode").addEventListener("change", e => { state.repeat=e.target.value; });

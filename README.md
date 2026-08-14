@@ -1,8 +1,7 @@
-# LoneEddy Allocator — GitHub Pages main/root v9
+# LoneEddy Allocator — GitHub Pages v10
 
-Static GitHub Pages frontend plus Google Apps Script backend.
+Static GitHub Pages frontend + Google Apps Script backend. No npm build or GitHub Actions is required for the `main / (root)` publishing method.
 
-- Upload `index.html`, `app.js`, `style.css`, `.nojekyll`, and `404.html` to the repository root.
-- GitHub Pages: `main` → `/(root)`.
-- Replace Apps Script with `apps-script/Code.gs` and redeploy a new Web app version.
-- Use **Test /exec** in the web UI before connecting.
+Important: v10 does **not** generate a fake successful allocation when Google Sheets is disconnected. Connect the Apps Script `/exec` endpoint and use **Test Sheet Write** before running.
+
+See `apps-script/DEPLOYMENT.md` for Apps Script steps and `CHECK_REPORT.md` for the regression checks.
