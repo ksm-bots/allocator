@@ -173,8 +173,7 @@ Source: <b>Group!A2:J</b> · Output: <b>Allocation</b> + <b>Distribution_Result<
     <div>
       <h2>Customers</h2>
       <div class="muted">
-        Exact Right3 stock depth is used: e.g. 013×7, 003×6, 011×5, … Single×1. PT uses pass 1, pass 2, pass 3 by real stock depth. Every other customer may receive each exact Right3 only once.
-      </div>
+        Global planner: every non-PT customer has exact Right3 ×1 and is balanced across 0xx–9xx. PT uses the remaining real stock, preferring unique Right3 first, then 2nd/3rd copies as needed. </div>
     </div>
     <button onclick="addCustomer()">+ Add Customer</button>
   </div>
@@ -498,25 +497,25 @@ function renderResults(list){
             <div class="muted">
               Target ${fmt(c.target)} · Assigned ${fmt(c.assigned)} ·
               Unique Right3 ${fmt(c.uniqueRight3)} ·
-              Right3 rule ${String(c.name).trim().toUpperCase()==='PT'?'PT by exact stock depth':'Exact Right3 ×1 only'} ·
+              Right3 rule ${String(c.name).trim().toUpperCase()==='PT'?'PT: unique first → extra real copies':'Exact Right3 ×1 only'} ·
               Unique Right3 ${fmt(c.uniqueRight3)} ·
               Max same Right3 used ${c.maxRight3ActuallyUsed} ·
-              ${(c.hasAllRight3Groups0to9 || Number(c.target)<10)
+              ${(c.hasAllRight3Hundreds || Number(c.target)<10)
                 ? '<span class="good">Right3 groups 0–9 ✓</span>'
-                : '<span class="bad">Missing Right3 groups: '+(c.missingRight3Groups||[]).join(',')+'</span>'}
+                : '<span class="bad">Missing Right3 groups: '+(c.missingRight3Hundreds||[]).join(',')+'</span>'}
             </div>
             <div class="muted" style="margin-top:5px">
-              Right3 groups:
-              0xx:${c.right3GroupCounts?.['0']||0} ·
-              1xx:${c.right3GroupCounts?.['1']||0} ·
-              2xx:${c.right3GroupCounts?.['2']||0} ·
-              3xx:${c.right3GroupCounts?.['3']||0} ·
-              4xx:${c.right3GroupCounts?.['4']||0} ·
-              5xx:${c.right3GroupCounts?.['5']||0} ·
-              6xx:${c.right3GroupCounts?.['6']||0} ·
-              7xx:${c.right3GroupCounts?.['7']||0} ·
-              8xx:${c.right3GroupCounts?.['8']||0} ·
-              9xx:${c.right3GroupCounts?.['9']||0}
+              Right3 0xx–9xx:
+              0:${c.right3HundredCounts?.['0']||0} ·
+              1:${c.right3HundredCounts?.['1']||0} ·
+              2:${c.right3HundredCounts?.['2']||0} ·
+              3:${c.right3HundredCounts?.['3']||0} ·
+              4:${c.right3HundredCounts?.['4']||0} ·
+              5:${c.right3HundredCounts?.['5']||0} ·
+              6:${c.right3HundredCounts?.['6']||0} ·
+              7:${c.right3HundredCounts?.['7']||0} ·
+              8:${c.right3HundredCounts?.['8']||0} ·
+              9:${c.right3HundredCounts?.['9']||0}
             </div>
           </div>
           <button class="secondary" onclick='copyNums(${JSON.stringify(c.numbers||[])})'>Copy Numbers</button>
