@@ -1,0 +1,547 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Thai Lottery Customer Allocator</title>
+  <style>
+    :root {
+      --bg: #0b1020;
+      --card: #141b2d;
+      --card2: #1b2540;
+      --text: #f7f8fb;
+      --muted: #a9b3ca;
+      --line: #2a3655;
+      --good: #45d483;
+      --bad: #ff6b6b;
+      --warn: #ffc857;
+      --brand: #7c9cff;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+    }
+    .wrap {
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    h1, h2, h3 { margin: 0 0 12px; }
+    .sub { color: var(--muted); margin-bottom: 18px; }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(4,minmax(0,1fr));
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    .stat, .panel {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 16px;
+    }
+    .stat .n {
+      font-size: 30px;
+      font-weight: 800;
+      margin-top: 6px;
+    }
+    .stat .label { color: var(--muted); font-size: 13px; }
+    .panel { margin-bottom: 16px; }
+    .row {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+    input, select, button {
+      border-radius: 10px;
+      border: 1px solid var(--line);
+      padding: 10px 12px;
+      font: inherit;
+    }
+    input, select {
+      background: #0f1628;
+      color: var(--text);
+    }
+    button {
+      background: var(--brand);
+      color: white;
+      border: 0;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    button.secondary { background: var(--card2); }
+    button.danger { background: #9b2c3c; }
+    button:disabled { opacity: .55; cursor: not-allowed; }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 900px;
+    }
+    th, td {
+      padding: 10px;
+      border-bottom: 1px solid var(--line);
+      text-align: left;
+      white-space: nowrap;
+    }
+    th { color: var(--muted); font-size: 12px; }
+    .table-wrap { overflow-x: auto; }
+    .customer-row input[type="text"] { width: 150px; }
+    .customer-row input[type="number"] { width: 110px; }
+    .badge {
+      display: inline-flex;
+      padding: 4px 8px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 700;
+      background: var(--card2);
+    }
+    .good { color: var(--good); }
+    .bad { color: var(--bad); }
+    .warn { color: var(--warn); }
+    .notice {
+      padding: 12px 14px;
+      border-radius: 10px;
+      background: #111a30;
+      border: 1px solid var(--line);
+      color: var(--muted);
+      margin: 10px 0 0;
+      white-space: pre-wrap;
+    }
+    .result-card {
+      background: var(--card2);
+      border-radius: 12px;
+      padding: 14px;
+      margin: 10px 0;
+    }
+    .numbers {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 13px;
+      line-height: 1.7;
+      max-height: 220px;
+      overflow: auto;
+      background: #0c1323;
+      padding: 12px;
+      border-radius: 10px;
+      margin-top: 10px;
+    }
+    .api-box { flex: 1 1 620px; min-width: 250px; }
+    .small { font-size: 12px; color: var(--muted); }
+    @media (max-width: 850px) {
+      .grid { grid-template-columns: repeat(2,minmax(0,1fr)); }
+    }
+    @media (max-width: 520px) {
+      .grid { grid-template-columns: 1fr; }
+      .wrap { padding: 12px; }
+    }
+  </style>
+</head>
+<body>
+<div class="wrap">
+  <h1>🎟️ Thai Lottery Customer Allocator</h1>
+  <div class="sub">
+    Source: <b>Group!A2:J</b> · Blank cells are ignored · Leading zeroes are preserved
+  </div>
+
+  <div class="panel">
+    <div class="row">
+      <input id="apiUrl" class="api-box"
+             placeholder="https://script.google.com/macros/s/AKfycbwzTUHnD_7QW1nxkQb1BDeiuahq_g83qrXw6WuIN3TLYY1KJj6q1xn3Kekqirh_Pus/exec">
+      <button onclick="saveApi()">Save API URL</button>
+      <button class="secondary" onclick="loadAll()">Reload</button>
+    </div>
+    <div id="connectionMsg" class="notice">Set your Apps Script /exec URL first.</div>
+  </div>
+
+  <div class="grid">
+    <div class="stat">
+      <div class="label">Usable Tickets</div>
+      <div class="n" id="totalTickets">—</div>
+      <div class="small">Expected from your current Group sheet: 2,779</div>
+    </div>
+    <div class="stat">
+      <div class="label">Unique Right3</div>
+      <div class="n" id="uniqueRight3">—</div>
+    </div>
+    <div class="stat">
+      <div class="label">Requested</div>
+      <div class="n" id="requestedTotal">0</div>
+    </div>
+    <div class="stat">
+      <div class="label">Remaining After Allocation</div>
+      <div class="n" id="remainingTotal">—</div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="row" style="justify-content:space-between">
+      <div>
+        <h2>Customers</h2>
+        <div class="small">
+          Right3 Limit = normal maximum. If “Allow +1/+2…” is enabled, the system
+          increases the limit only when needed to reach the customer quantity.
+        </div>
+      </div>
+      <button onclick="addCustomer()">+ Add Customer</button>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+        <tr>
+          <th>Customer</th>
+          <th>Quantity</th>
+          <th>Right3 Limit</th>
+          <th>Allow +1/+2 if needed</th>
+          <th>Priority</th>
+          <th>Active</th>
+          <th></th>
+        </tr>
+        </thead>
+        <tbody id="customerBody"></tbody>
+      </table>
+    </div>
+
+    <div class="row" style="margin-top:14px">
+      <button onclick="saveCustomers()">Save Customers to Sheet</button>
+      <button class="secondary" onclick="runAllocation()">Allocate 2,779 Stock</button>
+      <button class="danger" onclick="clearAllocation()">Clear Allocation Sheet</button>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h2>Allocation Result</h2>
+    <div id="allocationSummary" class="notice">No allocation run yet.</div>
+    <div id="results"></div>
+  </div>
+</div>
+
+<script>
+const CONFIG = {
+  // You can hard-code your Apps Script URL here later if you prefer:
+  API_URL: ''
+};
+
+let customers = [];
+let lastSummary = null;
+
+document.addEventListener('DOMContentLoaded', () => {
+  const saved = localStorage.getItem('thaiLotteryAllocatorApi') || CONFIG.API_URL || '';
+  document.getElementById('apiUrl').value = saved;
+
+  if (saved) loadAll();
+  else renderCustomers();
+});
+
+function apiUrl() {
+  return document.getElementById('apiUrl').value.trim();
+}
+
+function saveApi() {
+  const url = apiUrl();
+  localStorage.setItem('thaiLotteryAllocatorApi', url);
+  setMessage(url ? 'API URL saved. Loading data…' : 'API URL removed.');
+  if (url) loadAll();
+}
+
+async function apiGet(action) {
+  const url = apiUrl();
+  if (!url) throw new Error('Please enter the Apps Script /exec URL.');
+
+  const sep = url.includes('?') ? '&' : '?';
+  const res = await fetch(url + sep + 'action=' + encodeURIComponent(action) + '&_=' + Date.now(), {
+    method: 'GET',
+    redirect: 'follow',
+    cache: 'no-store'
+  });
+
+  const text = await res.text();
+  let data;
+  try { data = JSON.parse(text); }
+  catch (_) { throw new Error('Apps Script returned invalid JSON. Check deployment access and /exec URL.'); }
+
+  if (!data.ok) throw new Error(data.error || 'Request failed.');
+  return data;
+}
+
+async function apiPost(payload) {
+  const url = apiUrl();
+  if (!url) throw new Error('Please enter the Apps Script /exec URL.');
+
+  // text/plain avoids a browser CORS preflight that often causes trouble
+  // with GitHub Pages -> Apps Script.
+  const res = await fetch(url, {
+    method: 'POST',
+    redirect: 'follow',
+    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+    body: JSON.stringify(payload)
+  });
+
+  const text = await res.text();
+  let data;
+  try { data = JSON.parse(text); }
+  catch (_) { throw new Error('Apps Script returned invalid JSON. Check Web App deployment.'); }
+
+  if (!data.ok) throw new Error(data.error || 'Request failed.');
+  return data;
+}
+
+async function loadAll() {
+  setBusy(true);
+  try {
+    const [ticketData, customerData] = await Promise.all([
+      apiGet('tickets'),
+      apiGet('customers')
+    ]);
+
+    document.getElementById('totalTickets').textContent = fmt(ticketData.totalTickets);
+    document.getElementById('uniqueRight3').textContent = fmt(ticketData.uniqueRight3);
+
+    if (ticketData.totalTickets === 2779) {
+      setMessage('Connected ✓  Group!A2:J loaded correctly: 2,779 usable tickets.');
+    } else {
+      setMessage(
+        'Connected, but usable ticket count is ' + fmt(ticketData.totalTickets) +
+        ', not 2,779. Blank cells are ignored and only exact 6-digit values are counted.',
+        'warn'
+      );
+    }
+
+    customers = customerData.customers || [];
+    renderCustomers();
+    updateRequested();
+
+    try {
+      const alloc = await apiGet('allocation');
+      renderSavedAllocation(alloc.allocation || []);
+    } catch (_) {}
+
+  } catch (err) {
+    setMessage(err.message, 'bad');
+  } finally {
+    setBusy(false);
+  }
+}
+
+function addCustomer(data = {}) {
+  customers.push({
+    name: data.name || '',
+    quantity: Number(data.quantity || 0),
+    right3Limit: Number(data.right3Limit || 2),
+    allowExtraLimit: data.allowExtraLimit !== false,
+    priority: Number(data.priority || customers.length + 1),
+    active: data.active !== false
+  });
+  renderCustomers();
+  updateRequested();
+}
+
+function removeCustomer(i) {
+  customers.splice(i, 1);
+  renderCustomers();
+  updateRequested();
+}
+
+function syncFromInputs() {
+  const rows = [...document.querySelectorAll('#customerBody tr')];
+  customers = rows.map((tr, i) => ({
+    name: tr.querySelector('[data-k="name"]').value.trim(),
+    quantity: Math.max(0, Number(tr.querySelector('[data-k="quantity"]').value || 0)),
+    right3Limit: Math.max(1, Number(tr.querySelector('[data-k="right3Limit"]').value || 1)),
+    allowExtraLimit: tr.querySelector('[data-k="allowExtraLimit"]').checked,
+    priority: Number(tr.querySelector('[data-k="priority"]').value || i + 1),
+    active: tr.querySelector('[data-k="active"]').checked
+  }));
+}
+
+function renderCustomers() {
+  const body = document.getElementById('customerBody');
+
+  if (!customers.length) {
+    customers = [
+      { name:'PT', quantity:1200, right3Limit:2, allowExtraLimit:true, priority:1, active:true }
+    ];
+  }
+
+  body.innerHTML = customers.map((c, i) => `
+    <tr class="customer-row">
+      <td><input data-k="name" type="text" value="${esc(c.name)}" oninput="updateRequested()"></td>
+      <td><input data-k="quantity" type="number" min="0" step="1" value="${Number(c.quantity || 0)}" oninput="updateRequested()"></td>
+      <td><input data-k="right3Limit" type="number" min="1" step="1" value="${Number(c.right3Limit || 1)}"></td>
+      <td><input data-k="allowExtraLimit" type="checkbox" ${c.allowExtraLimit !== false ? 'checked' : ''}></td>
+      <td><input data-k="priority" type="number" min="1" step="1" value="${Number(c.priority || i+1)}"></td>
+      <td><input data-k="active" type="checkbox" ${c.active !== false ? 'checked' : ''} onchange="updateRequested()"></td>
+      <td><button class="danger" onclick="removeCustomer(${i})">Delete</button></td>
+    </tr>
+  `).join('');
+}
+
+function updateRequested() {
+  try { syncFromInputs(); } catch (_) {}
+  const total = customers
+    .filter(c => c.active)
+    .reduce((s,c) => s + Number(c.quantity || 0), 0);
+
+  document.getElementById('requestedTotal').textContent = fmt(total);
+}
+
+async function saveCustomers() {
+  syncFromInputs();
+  setBusy(true);
+  try {
+    const data = await apiPost({ action:'saveCustomers', customers });
+    customers = data.customers || customers;
+    renderCustomers();
+    updateRequested();
+    setMessage('Customers saved to Google Sheet → Customers ✓');
+  } catch (err) {
+    setMessage(err.message, 'bad');
+  } finally {
+    setBusy(false);
+  }
+}
+
+async function runAllocation() {
+  syncFromInputs();
+
+  const requested = customers
+    .filter(c => c.active)
+    .reduce((s,c) => s + Number(c.quantity || 0), 0);
+
+  const visibleTotal = Number(
+    String(document.getElementById('totalTickets').textContent).replace(/,/g,'')
+  );
+
+  if (visibleTotal && requested > visibleTotal) {
+    setMessage(
+      `Customers request ${fmt(requested)} tickets, but source only has ${fmt(visibleTotal)} usable tickets. ` +
+      `The system will allocate as much as possible.`,
+      'warn'
+    );
+  }
+
+  setBusy(true);
+
+  try {
+    await apiPost({ action:'saveCustomers', customers });
+
+    const data = await apiPost({
+      action:'allocate',
+      customers,
+      options: { balanceLastDigit:true }
+    });
+
+    lastSummary = data.summary;
+    document.getElementById('remainingTotal').textContent = fmt(data.remaining);
+    renderResults(data);
+    setMessage('Allocation completed and saved to Google Sheet → Allocation ✓');
+
+  } catch (err) {
+    setMessage(err.message, 'bad');
+  } finally {
+    setBusy(false);
+  }
+}
+
+function renderResults(data) {
+  const s = data.summary || {};
+  document.getElementById('allocationSummary').innerHTML =
+    `Source: <b>${fmt(s.sourceTotal || 0)}</b> &nbsp; | &nbsp; ` +
+    `Requested: <b>${fmt(s.requestedTotal || 0)}</b> &nbsp; | &nbsp; ` +
+    `Assigned: <b>${fmt(s.assignedTotal || 0)}</b> &nbsp; | &nbsp; ` +
+    `Remaining: <b>${fmt(s.remainingTotal || 0)}</b> &nbsp; | &nbsp; ` +
+    `Unique Right3: <b>${fmt(s.uniqueRight3InSource || 0)}</b>`;
+
+  const el = document.getElementById('results');
+  el.innerHTML = (data.customers || []).map(c => {
+    const status = c.shortage > 0
+      ? `<span class="badge bad">Short ${fmt(c.shortage)}</span>`
+      : `<span class="badge good">Complete</span>`;
+
+    const digits = Object.keys(c.lastDigitCounts || {})
+      .sort()
+      .map(d => `${d}:${c.lastDigitCounts[d]}`)
+      .join(' &nbsp; ');
+
+    return `
+      <div class="result-card">
+        <div class="row" style="justify-content:space-between">
+          <div>
+            <h3>${esc(c.name)} ${status}</h3>
+            <div class="small">
+              Target ${fmt(c.target)} · Assigned ${fmt(c.assigned)} ·
+              Unique Right3 ${fmt(c.uniqueRight3)} ·
+              Requested limit ${c.requestedRight3Limit} ·
+              Max actually used ${c.maxRight3ActuallyUsed}
+            </div>
+          </div>
+          <button class="secondary" onclick='copyNumbers(${JSON.stringify(c.numbers || [])})'>Copy Numbers</button>
+        </div>
+        <div class="small" style="margin-top:8px">Last digits: ${digits}</div>
+        <div class="numbers">${(c.numbers || []).map(esc).join('<br>')}</div>
+      </div>
+    `;
+  }).join('');
+}
+
+function renderSavedAllocation(rows) {
+  if (!rows.length) return;
+
+  const byCustomer = {};
+  rows.forEach(r => {
+    if (!byCustomer[r.customer]) byCustomer[r.customer] = [];
+    byCustomer[r.customer].push(r.number);
+  });
+
+  document.getElementById('allocationSummary').textContent =
+    `Saved Allocation sheet currently contains ${fmt(rows.length)} assigned tickets.`;
+}
+
+async function clearAllocation() {
+  setBusy(true);
+  try {
+    await apiPost({ action:'clearAllocation' });
+    document.getElementById('results').innerHTML = '';
+    document.getElementById('allocationSummary').textContent = 'Allocation sheet cleared.';
+    document.getElementById('remainingTotal').textContent = '—';
+    setMessage('Allocation sheet cleared.');
+  } catch (err) {
+    setMessage(err.message, 'bad');
+  } finally {
+    setBusy(false);
+  }
+}
+
+async function copyNumbers(numbers) {
+  await navigator.clipboard.writeText((numbers || []).join('\n'));
+  setMessage(`Copied ${fmt((numbers || []).length)} numbers.`);
+}
+
+function setBusy(on) {
+  document.querySelectorAll('button').forEach(b => b.disabled = on);
+}
+
+function setMessage(text, cls='') {
+  const el = document.getElementById('connectionMsg');
+  el.className = 'notice ' + cls;
+  el.textContent = text;
+}
+
+function fmt(n) {
+  return Number(n || 0).toLocaleString();
+}
+
+function esc(v) {
+  return String(v ?? '')
+    .replace(/&/g,'&amp;')
+    .replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;')
+    .replace(/'/g,'&#039;');
+}
+</script>
+</body>
+</html>
