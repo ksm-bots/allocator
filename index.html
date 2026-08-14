@@ -149,7 +149,7 @@
   <div class="panel">
     <div class="row">
       <input id="apiUrl" class="api-box"
-             placeholder="https://script.google.com/macros/s/AKfycbwzTUHnD_7QW1nxkQb1BDeiuahq_g83qrXw6WuIN3TLYY1KJj6q1xn3Kekqirh_Pus/exec">
+             placeholder="Paste Google Apps Script /exec URL here">
       <button onclick="saveApi()">Save API URL</button>
       <button class="secondary" onclick="loadAll()">Reload</button>
     </div>
@@ -208,12 +208,12 @@
     <div class="row" style="margin-top:14px">
       <button onclick="saveCustomers()">Save Customers to Sheet</button>
       <button class="secondary" onclick="runAllocation()">Allocate 2,779 Stock</button>
-      <button class="danger" onclick="clearAllocation()">Clear Allocation Sheet</button>
+      <button class="danger" onclick="clearAllocation()">Clear Distribution_Result</button>
     </div>
   </div>
 
   <div class="panel">
-    <h2>Allocation Result</h2>
+    <h2>Distribution Result</h2>
     <div id="allocationSummary" class="notice">No allocation run yet.</div>
     <div id="results"></div>
   </div>
@@ -437,7 +437,7 @@ async function runAllocation() {
     lastSummary = data.summary;
     document.getElementById('remainingTotal').textContent = fmt(data.remaining);
     renderResults(data);
-    setMessage('Allocation completed and saved to Google Sheet → Allocation ✓');
+    setMessage('Allocation completed and saved to Google Sheet → Distribution_Result ✓');
 
   } catch (err) {
     setMessage(err.message, 'bad');
@@ -497,7 +497,7 @@ function renderSavedAllocation(rows) {
   });
 
   document.getElementById('allocationSummary').textContent =
-    `Saved Allocation sheet currently contains ${fmt(rows.length)} assigned tickets.`;
+    `Saved Distribution_Result currently contains ${fmt(rows.length)} assigned tickets.`;
 }
 
 async function clearAllocation() {
@@ -505,9 +505,9 @@ async function clearAllocation() {
   try {
     await apiPost({ action:'clearAllocation' });
     document.getElementById('results').innerHTML = '';
-    document.getElementById('allocationSummary').textContent = 'Allocation sheet cleared.';
+    document.getElementById('allocationSummary').textContent = 'Distribution_Result cleared.';
     document.getElementById('remainingTotal').textContent = '—';
-    setMessage('Allocation sheet cleared.');
+    setMessage('Distribution_Result cleared.');
   } catch (err) {
     setMessage(err.message, 'bad');
   } finally {
