@@ -173,7 +173,7 @@ Source: <b>Group!A2:J</b> · Output: <b>Allocation</b> + <b>Distribution_Result<
     <div>
       <h2>Customers</h2>
       <div class="muted">
-        Hard rule: every active customer with quantity ≥ 10 gets Right3 groups 0xx–9xx first. Example: 0=000–099, 1=100–199, …, 9=900–999. After that PT is filled first by real Right3 stock depth. Single Right3 is never doubled.
+        Rule: PT is the main customer and may use the 2nd/3rd physical copy of a Right3 when needed. Every other customer gets each exact Right3 only once. They may still have many different Right3 values inside the same 0xx–9xx group, like your example.
       </div>
     </div>
     <button onclick="addCustomer()">+ Add Customer</button>
@@ -498,8 +498,8 @@ function renderResults(list){
             <div class="muted">
               Target ${fmt(c.target)} · Assigned ${fmt(c.assigned)} ·
               Unique Right3 ${fmt(c.uniqueRight3)} ·
-              Requested limit ${c.requestedRight3Limit} ·
-              Max actually used ${c.maxRight3ActuallyUsed}${String(c.name).trim().toUpperCase()==='PT'?' · Main customer PT':''} ·
+              Right3 rule ${String(c.name).trim().toUpperCase()==='PT'?'PT multi-copy by real stock':'Exact Right3 ×1 only'} ·
+              Max exact Right3 used ${c.maxRight3ActuallyUsed} ·
               ${(c.hasAllRight3Groups0to9 || Number(c.target)<10)
                 ? '<span class="good">Right3 groups 0–9 ✓</span>'
                 : '<span class="bad">Missing Right3 groups: '+(c.missingRight3Groups||[]).join(',')+'</span>'}
