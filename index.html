@@ -173,7 +173,7 @@ Source: <b>Group!A2:J</b> · Output: <b>Allocation</b> + <b>Distribution_Result<
     <div>
       <h2>Customers</h2>
       <div class="muted">
-        PT is the main customer: 1 from every Right3 first, then 2nd copies only where real stock has 2+, then 3rd copies only where stock has 3+. Single Right3 is never doubled.
+        Hard rule: every active customer with quantity ≥ 10 gets ending digits 0–9 first. After that PT is filled first by real Right3 stock depth. Single Right3 is never doubled.
       </div>
     </div>
     <button onclick="addCustomer()">+ Add Customer</button>
@@ -499,7 +499,23 @@ function renderResults(list){
               Target ${fmt(c.target)} · Assigned ${fmt(c.assigned)} ·
               Unique Right3 ${fmt(c.uniqueRight3)} ·
               Requested limit ${c.requestedRight3Limit} ·
-              Max actually used ${c.maxRight3ActuallyUsed}${String(c.name).trim().toUpperCase()==='PT'?' · Main customer PT':''}
+              Max actually used ${c.maxRight3ActuallyUsed}${String(c.name).trim().toUpperCase()==='PT'?' · Main customer PT':''} ·
+              ${(c.hasAllDigits0to9 || Number(c.target)<10)
+                ? '<span class="good">0–9 ✓</span>'
+                : '<span class="bad">Missing: '+(c.missingLastDigits||[]).join(',')+'</span>'}
+            </div>
+            <div class="muted" style="margin-top:5px">
+              Last digits:
+              0:${c.lastDigitCounts?.['0']||0} ·
+              1:${c.lastDigitCounts?.['1']||0} ·
+              2:${c.lastDigitCounts?.['2']||0} ·
+              3:${c.lastDigitCounts?.['3']||0} ·
+              4:${c.lastDigitCounts?.['4']||0} ·
+              5:${c.lastDigitCounts?.['5']||0} ·
+              6:${c.lastDigitCounts?.['6']||0} ·
+              7:${c.lastDigitCounts?.['7']||0} ·
+              8:${c.lastDigitCounts?.['8']||0} ·
+              9:${c.lastDigitCounts?.['9']||0}
             </div>
           </div>
           <button class="secondary" onclick='copyNums(${JSON.stringify(c.numbers||[])})'>Copy Numbers</button>
