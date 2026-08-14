@@ -173,7 +173,7 @@ Source: <b>Group!A2:J</b> · Output: <b>Allocation</b> + <b>Distribution_Result<
     <div>
       <h2>Customers</h2>
       <div class="muted">
-        Right3 rotation: PT gets the first 2 physical copies of each exact Right3 when needed, then each other customer can get that Right3 once. Any copies still left may return to PT only if PT is short. </div>
+        PT rule: use the lowest repetition possible. Example 500 unique + PT 1000 ≈ ×2 each; 501 unique + PT 1000 = mostly ×2 with two ×1; PT above that uses ×3 only for the small number still needed. Other customers: exact Right3 ×1. </div>
     </div>
     <button onclick="addCustomer()">+ Add Customer</button>
   </div>
@@ -497,9 +497,14 @@ function renderResults(list){
             <div class="muted">
               Target ${fmt(c.target)} · Assigned ${fmt(c.assigned)} ·
               Unique Right3 ${fmt(c.uniqueRight3)} ·
-              Right3 rule ${String(c.name).trim().toUpperCase()==='PT'?'PT first ×2 → customers ×1 → PT extra':'Exact Right3 ×1 only'} ·
+              Right3 rule ${String(c.name).trim().toUpperCase()==='PT'?'PT: minimum repetition (×1 → ×2 → only-needed ×3)':'Exact Right3 ×1 only'} ·
               Unique Right3 ${fmt(c.uniqueRight3)} ·
               Max same Right3 used ${c.maxRight3ActuallyUsed} ·
+              ${String(c.name).trim().toUpperCase()==='PT'
+                ? 'PT usage: ×1='+(c.right3UsageBreakdown?.['1']||0)+
+                  ' · ×2='+(c.right3UsageBreakdown?.['2']||0)+
+                  ' · ×3='+(c.right3UsageBreakdown?.['3']||0)
+                : ''} ·
               ${(c.hasAllRight3Hundreds || Number(c.target)<10)
                 ? '<span class="good">Right3 groups 0–9 ✓</span>'
                 : '<span class="bad">Missing Right3 groups: '+(c.missingRight3Hundreds||[]).join(',')+'</span>'}
