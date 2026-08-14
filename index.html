@@ -72,6 +72,9 @@ button {
   color: white;
   font-weight: 600;
   cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 button:hover:not(:disabled) { background: var(--brand-hover); }
 button.secondary { background: var(--panel2); border: 1px solid var(--line); }
@@ -149,12 +152,11 @@ td input[type=number] { width: 100%; min-width: 90px; }
   font-size: 0.9em;
 }
 
-/* Spinner for Loading State */
 .spinner {
   display: inline-block; width: 16px; height: 16px;
   border: 2px solid rgba(255,255,255,0.3); border-radius: 50%;
   border-top-color: #fff; animation: spin 1s ease-in-out infinite;
-  vertical-align: middle; margin-right: 8px; display: none;
+  margin-right: 8px; display: none;
 }
 @keyframes spin { to { transform: rotate(360deg); } }
 .loading .spinner { display: inline-block; }
@@ -209,7 +211,7 @@ td input[type=number] { width: 100%; min-width: 90px; }
       <div style="max-width: 80%;">
         <h2>Customer Logistics</h2>
         <div class="muted">
-          <b>PT PROTOCOL:</b> PT fills first via round-robin unique right3 distribution. <b>OTHERS:</b> Strict 1-ticket limit per unique Right3 to ensure ultimate diversity. System automatically balances 0xx-9xx.
+          <b>PT PROTOCOL:</b> PT fills first via round-robin distribution. <b>OTHERS:</b> Strict 1-ticket limit per unique Right3 to ensure ultimate diversity. System automatically balances 0xx-9xx. <b>FALLBACK:</b> Any remaining shortages are filled precisely.
         </div>
       </div>
       <button onclick="addCustomer()">+ Add Customer</button>
