@@ -173,7 +173,7 @@ Source: <b>Group!A2:J</b> · Output: <b>Allocation</b> + <b>Distribution_Result<
     <div>
       <h2>Customers</h2>
       <div class="muted">
-        Right3 limit is used first; extra repetitions are allowed only when needed.
+        PT is the main customer: 1 from every Right3 first, then 2nd copies only where real stock has 2+, then 3rd copies only where stock has 3+. Single Right3 is never doubled.
       </div>
     </div>
     <button onclick="addCustomer()">+ Add Customer</button>
@@ -499,7 +499,7 @@ function renderResults(list){
               Target ${fmt(c.target)} · Assigned ${fmt(c.assigned)} ·
               Unique Right3 ${fmt(c.uniqueRight3)} ·
               Requested limit ${c.requestedRight3Limit} ·
-              Max actually used ${c.maxRight3ActuallyUsed}
+              Max actually used ${c.maxRight3ActuallyUsed}${String(c.name).trim().toUpperCase()==='PT'?' · Main customer PT':''}
             </div>
           </div>
           <button class="secondary" onclick='copyNums(${JSON.stringify(c.numbers||[])})'>Copy Numbers</button>
