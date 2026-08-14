@@ -173,7 +173,7 @@ Source: <b>Group!A2:J</b> · Output: <b>Allocation</b> + <b>Distribution_Result<
     <div>
       <h2>Customers</h2>
       <div class="muted">
-        PT FIRST: Round 1 gives PT one from every unique Right3. Round 2 gives one more from every Right3 with a real second copy. Round 3 gives only the remaining PT amount from different Right3 values with a third copy. Other customers are allocated only after PT is complete. HOM, MF440 and every other non-PT customer are strict exact Right3 ×1, and remaining stock is shared globally one ticket at a time for fairness. </div>
+        PT FIRST: Round 1 gives PT one from every unique Right3. Round 2 gives one more from every Right3 with a real second copy. Round 3 gives only the remaining PT amount from different Right3 values with a third copy. Other customers are allocated only after PT is complete. For HOM, MF440 and all other non-PT customers, repeated Right3 is allowed as long as every 6-digit physical ticket is different. Remaining tickets are shared fairly until customer targets are reached. </div>
     </div>
     <button onclick="addCustomer()">+ Add Customer</button>
   </div>
@@ -497,7 +497,7 @@ function renderResults(list){
             <div class="muted">
               Target ${fmt(c.target)} · Assigned ${fmt(c.assigned)} ·
               Unique Right3 ${fmt(c.uniqueRight3)} ·
-              Right3 rule ${String(c.name).trim().toUpperCase()==='PT'?'PT first: unique round → 2nd round → partial 3rd round':'Exact Right3 ×1 · fair share'} ·
+              Right3 rule ${String(c.name).trim().toUpperCase()==='PT'?'PT first: unique round → 2nd round → partial 3rd round':'Repeated Right3 allowed · unique 6-digit tickets'} ·
               Unique Right3 ${fmt(c.uniqueRight3)} ·
               Max same Right3 used ${c.maxRight3ActuallyUsed} ·
               ${(c.hasAllRight3Hundreds || Number(c.target)<10)
