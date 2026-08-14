@@ -152,6 +152,7 @@
              placeholder="Paste Google Apps Script /exec URL here">
       <button onclick="saveApi()">Save API URL</button>
       <button class="secondary" onclick="loadAll()">Reload</button>
+      <button class="secondary" onclick="runWriteTest()">Test Sheet Write</button>
     </div>
     <div id="connectionMsg" class="notice">Set your Apps Script /exec URL first.</div>
   </div>
@@ -437,7 +438,12 @@ async function runAllocation() {
     lastSummary = data.summary;
     document.getElementById('remainingTotal').textContent = fmt(data.remaining);
     renderResults(data);
-    setMessage('Allocation completed and saved to Google Sheet → Distribution_Result ✓');
+    const wr = data.writeResult || {};
+    setMessage(
+      `Distribution_Result saved and verified ✓ ` +
+      `${fmt(wr.verifiedTicketCount || 0)} tickets written to ` +
+      `${wr.spreadsheetName || 'Google Sheet'} → ${wr.sheetName || 'Distribution_Result'}`
+    );
 
   } catch (err) {
     setMessage(err.message, 'bad');
@@ -498,6 +504,27 @@ function renderSavedAllocation(rows) {
 
   document.getElementById('allocationSummary').textContent =
     `Saved Distribution_Result currently contains ${fmt(rows.length)} assigned tickets.`;
+}
+
+
+async function runWriteTest() {
+  setBusy(true);
+  try {
+    const data = await apiPost({ action:'writeTest' });
+    const t = data.writeTest || {};
+    setMessage(
+      `Google Sheet write test passed ✓ Spreadsheet: ${t.spreadsheetName || ''} · ` +
+      `Sheet: ${t.sheetName || 'Distribution_Result'}`
+    );
+  } catch (err) {
+    setMessage(
+      'WRITE TEST FAILED: ' + err.message +
+      ' Check Apps Script deployment: Execute as Me, access Anyone, then deploy a NEW VERSION.',
+      'bad'
+    );
+  } finally {
+    setBusy(false);
+  }
 }
 
 async function clearAllocation() {
