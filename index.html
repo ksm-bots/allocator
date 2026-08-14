@@ -3,521 +3,570 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Thai Lottery Distribution Engine</title>
+<title>Thai Lottery Distribution</title>
 <style>
-:root {
-  --bg: #090e17;
-  --panel: #111a2a;
-  --panel2: #1a243a;
-  --line: #2a3852;
-  --text: #f0f4ff;
-  --muted: #a0b2d6;
-  --brand: #5e84f5;
-  --brand-hover: #4a71e0;
-  --good: #34d399;
-  --bad: #f87171;
-  --warn: #fbbf24;
-  --radius: 12px;
+:root{
+  --bg:#09111f;
+  --panel:#121c31;
+  --panel2:#1a2743;
+  --line:#2c3b5f;
+  --text:#f7f9ff;
+  --muted:#afbdd8;
+  --brand:#7296ff;
+  --good:#42e18b;
+  --bad:#ff6d77;
+  --warn:#ffd166;
 }
-* { box-sizing: border-box; }
-body {
-  margin: 0;
-  background: var(--bg);
-  color: var(--text);
-  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-  line-height: 1.5;
+*{box-sizing:border-box}
+body{
+  margin:0;
+  background:var(--bg);
+  color:var(--text);
+  font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
 }
-.wrap {
-  max-width: 1250px;
-  margin: auto;
-  padding: 24px;
+.wrap{
+  max-width:1250px;
+  margin:auto;
+  padding:18px;
 }
-h1, h2, h3 { margin: 0 0 12px; font-weight: 600; }
-.muted { color: var(--muted); font-size: 0.9em; }
-
-.panel {
-  background: var(--panel);
-  border: 1px solid var(--line);
-  border-radius: var(--radius);
-  padding: 20px;
-  margin-bottom: 20px;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+.panel{
+  background:var(--panel);
+  border:1px solid var(--line);
+  border-radius:14px;
+  padding:16px;
+  margin-bottom:14px;
 }
-.row {
-  display: flex;
-  gap: 12px;
-  flex-wrap: wrap;
-  align-items: center;
+h1,h2,h3{margin:0 0 10px}
+.muted{color:var(--muted)}
+.row{
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+  align-items:center;
 }
-input, button {
-  border-radius: 8px;
-  padding: 10px 16px;
-  font: inherit;
-  font-size: 0.95em;
-  outline: none;
-  transition: all 0.2s ease;
+input,button{
+  border-radius:9px;
+  padding:10px 12px;
+  font:inherit;
 }
-input[type="text"], input[type="number"] {
-  background: #0d1522;
-  color: white;
-  border: 1px solid var(--line);
+input{
+  background:#0c1528;
+  color:white;
+  border:1px solid var(--line);
 }
-input[type="text"]:focus, input[type="number"]:focus {
-  border-color: var(--brand);
+button{
+  border:0;
+  background:var(--brand);
+  color:white;
+  font-weight:700;
+  cursor:pointer;
 }
-
-button {
-  border: 0;
-  background: var(--brand);
-  color: white;
-  font-weight: 600;
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
+button.secondary{background:var(--panel2)}
+button.danger{background:#9b3341}
+button:disabled{opacity:.5}
+.api{flex:1;min-width:280px}
+.notice{
+  margin-top:10px;
+  padding:12px;
+  border-radius:10px;
+  background:#0d172a;
+  border:1px solid var(--line);
+  color:var(--muted);
+  white-space:pre-wrap;
 }
-button:hover:not(:disabled) { background: var(--brand-hover); }
-button.secondary { background: var(--panel2); border: 1px solid var(--line); }
-button.secondary:hover:not(:disabled) { background: #23314d; }
-button.danger { background: #ab2c3d; }
-button.danger:hover:not(:disabled) { background: #8b2331; }
-button:disabled { opacity: 0.6; cursor: not-allowed; }
-
-.api { flex: 1; min-width: 280px; }
-.notice {
-  margin-top: 12px;
-  padding: 14px;
-  border-radius: 8px;
-  background: #111e36;
-  border: 1px solid var(--line);
-  color: var(--muted);
-  white-space: pre-wrap;
-  font-family: monospace;
-  font-size: 0.9em;
+.good{color:var(--good)}
+.bad{color:var(--bad)}
+.warn{color:var(--warn)}
+.stats{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:10px;
+  margin-bottom:14px;
 }
-.good { color: var(--good); }
-.bad { color: var(--bad); }
-.warn { color: var(--warn); }
-
-.stats {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 16px;
-  margin-bottom: 20px;
+.stat{
+  background:var(--panel);
+  border:1px solid var(--line);
+  border-radius:14px;
+  padding:14px;
 }
-.stat {
-  background: var(--panel);
-  border: 1px solid var(--line);
-  border-radius: var(--radius);
-  padding: 20px;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+.stat .n{
+  font-size:28px;
+  font-weight:800;
 }
-.stat .n {
-  font-size: 32px;
-  font-weight: 700;
-  margin-top: 4px;
+.tablewrap{overflow:auto}
+table{
+  width:100%;
+  border-collapse:collapse;
+  min-width:850px;
 }
-
-.tablewrap { overflow: auto; margin-top: 16px; }
-table {
-  width: 100%;
-  border-collapse: collapse;
-  min-width: 850px;
+th,td{
+  padding:9px;
+  border-bottom:1px solid var(--line);
+  text-align:left;
 }
-th, td {
-  padding: 12px 8px;
-  border-bottom: 1px solid var(--line);
-  text-align: left;
+th{color:var(--muted);font-size:12px}
+td input[type=text]{width:145px}
+td input[type=number]{width:105px}
+.result{
+  background:var(--panel2);
+  border-radius:12px;
+  padding:14px;
+  margin-top:10px;
 }
-th { color: var(--muted); font-size: 0.85em; text-transform: uppercase; letter-spacing: 0.05em; }
-td input[type=text] { width: 100%; min-width: 140px; }
-td input[type=number] { width: 100%; min-width: 90px; }
-
-.result {
-  background: var(--panel2);
-  border-radius: var(--radius);
-  padding: 16px;
-  margin-top: 16px;
-  border: 1px solid var(--line);
+.numbers{
+  margin-top:9px;
+  max-height:220px;
+  overflow:auto;
+  background:#08111f;
+  border-radius:9px;
+  padding:10px;
+  font-family:monospace;
+  line-height:1.65;
 }
-.numbers {
-  margin-top: 12px;
-  max-height: 250px;
-  overflow: auto;
-  background: #0b111d;
-  border-radius: 8px;
-  padding: 12px;
-  font-family: monospace;
-  line-height: 1.6;
-  font-size: 0.9em;
+@media(max-width:800px){
+  .stats{grid-template-columns:repeat(2,1fr)}
 }
-
-.spinner {
-  display: inline-block; width: 16px; height: 16px;
-  border: 2px solid rgba(255,255,255,0.3); border-radius: 50%;
-  border-top-color: #fff; animation: spin 1s ease-in-out infinite;
-  margin-right: 8px; display: none;
+@media(max-width:500px){
+  .stats{grid-template-columns:1fr}
 }
-@keyframes spin { to { transform: rotate(360deg); } }
-.loading .spinner { display: inline-block; }
-
-@media(max-width: 900px) { .stats { grid-template-columns: repeat(2, 1fr); } }
-@media(max-width: 500px) { .stats { grid-template-columns: 1fr; } }
 </style>
 </head>
 <body>
-
 <div class="wrap">
-  <h1>🎟️ Thai Lottery Distribution Console</h1>
-  <p class="muted">
-    Source: <b>Group!A2:J</b> &nbsp;·&nbsp; Output: <b>Allocation</b> + <b>Distribution_Result</b>
-  </p>
 
-  <div class="panel">
-    <div class="row">
-      <input id="api" class="api" placeholder="Google Apps Script Web App /exec URL">
-      <button id="btnSaveApi" onclick="saveApi()">Save & Connect</button>
-      <button class="secondary" onclick="loadAll()">
-        <span class="spinner"></span>Reload Data
-      </button>
-      <button class="secondary" onclick="writeTest()">
-        <span class="spinner"></span>Test Write Access
-      </button>
+<h1>🎟️ Thai Lottery Distribution</h1>
+<p class="muted">
+Source: <b>Group!A2:J</b> · Output: <b>Allocation</b> + <b>Distribution_Result</b>
+</p>
+
+<div class="panel">
+  <div class="row">
+    <input id="api" class="api" placeholder="Apps Script /exec URL">
+    <button onclick="saveApi()">Save API</button>
+    <button class="secondary" onclick="loadAll()">Reload</button>
+    <button class="secondary" onclick="writeTest()">Test Sheet Write</button>
+  </div>
+  <div id="msg" class="notice">Paste your Apps Script /exec URL.</div>
+</div>
+
+<div class="stats">
+  <div class="stat">
+    <div class="muted">Usable Tickets</div>
+    <div class="n" id="total">—</div>
+  </div>
+  <div class="stat">
+    <div class="muted">Unique Right3</div>
+    <div class="n" id="unique">—</div>
+  </div>
+  <div class="stat">
+    <div class="muted">Requested</div>
+    <div class="n" id="requested">0</div>
+  </div>
+  <div class="stat">
+    <div class="muted">Remaining</div>
+    <div class="n" id="remaining">—</div>
+  </div>
+</div>
+
+<div class="panel">
+  <div class="row" style="justify-content:space-between">
+    <div>
+      <h2>Customers</h2>
+      <div class="muted">
+        PT FIRST: Round 1 gives PT one from every unique Right3. Round 2 gives one more from every Right3 with a real second copy. Round 3 gives only the remaining PT amount from different Right3 values with a third copy. Other customers are allocated only after PT is complete. </div>
     </div>
-    <div id="msg" class="notice">Paste your Apps Script /exec URL above to connect.</div>
+    <button onclick="addCustomer()">+ Add Customer</button>
   </div>
 
-  <div class="stats">
-    <div class="stat">
-      <div class="muted">Usable Tickets</div>
-      <div class="n" id="total">—</div>
-    </div>
-    <div class="stat">
-      <div class="muted">Unique Right3</div>
-      <div class="n" id="unique">—</div>
-    </div>
-    <div class="stat">
-      <div class="muted">Requested Quantity</div>
-      <div class="n" id="requested">0</div>
-    </div>
-    <div class="stat">
-      <div class="muted">Remaining Stock</div>
-      <div class="n" id="remaining">—</div>
-    </div>
+  <div class="tablewrap">
+    <table>
+      <thead>
+      <tr>
+        <th>Name</th>
+        <th>Quantity</th>
+        <th>PT Start Limit</th>
+        <th>Allow Extra</th>
+        <th>Priority</th>
+        <th>Active</th>
+        <th></th>
+      </tr>
+      </thead>
+      <tbody id="customers"></tbody>
+    </table>
   </div>
 
-  <div class="panel">
-    <div class="row" style="justify-content:space-between">
-      <div style="max-width: 80%;">
-        <h2>Customer Logistics</h2>
-        <div class="muted">
-          <b>PT PROTOCOL:</b> PT fills first via round-robin distribution. <b>OTHERS:</b> Strict 1-ticket limit per unique Right3 to ensure ultimate diversity. System automatically balances 0xx-9xx. <b>FALLBACK:</b> Any remaining shortages are filled precisely.
-        </div>
-      </div>
-      <button onclick="addCustomer()">+ Add Customer</button>
-    </div>
-
-    <div class="tablewrap">
-      <table>
-        <thead>
-        <tr>
-          <th>Name Identifier</th>
-          <th>Ticket QTY</th>
-          <th>R3 Start Limit</th>
-          <th>Allow Extra</th>
-          <th>Priority</th>
-          <th>Active</th>
-          <th>Action</th>
-        </tr>
-        </thead>
-        <tbody id="customers"></tbody>
-      </table>
-    </div>
-
-    <div class="row" style="margin-top:20px">
-      <button onclick="saveCustomers()">
-        <span class="spinner"></span>Save Configuration
-      </button>
-      <button onclick="allocate()" style="background: var(--good); color: #000;">
-        <span class="spinner"></span>Execute Allocation & Write to Sheet
-      </button>
-      <button class="danger" onclick="clearOutput()">
-        <span class="spinner"></span>Clear Outputs
-      </button>
-    </div>
+  <div class="row" style="margin-top:12px">
+    <button onclick="saveCustomers()">Save Customers</button>
+    <button onclick="allocate()">Allocate + Save to Sheets</button>
+    <button class="danger" onclick="clearOutput()">Clear Output Sheets</button>
   </div>
+</div>
 
-  <div class="panel">
-    <h2>Distribution Audit & Results</h2>
-    <div id="summary" class="notice">Awaiting allocation run...</div>
-    <div id="results"></div>
-  </div>
+<div class="panel">
+  <h2>Distribution Result</h2>
+  <div id="summary" class="notice">No allocation yet.</div>
+  <div id="results"></div>
+</div>
+
 </div>
 
 <script>
 let customers = [];
-let isBusy = false;
 
-document.addEventListener('DOMContentLoaded', () => {
-  const saved = localStorage.getItem('lottery_api') || '';
-  document.getElementById('api').value = saved;
+document.addEventListener('DOMContentLoaded',()=>{
+  const saved=localStorage.getItem('lottery_api')||'';
+  document.getElementById('api').value=saved;
   if(saved) loadAll();
   else renderCustomers();
 });
 
-function api() {
+function api(){
   return document.getElementById('api').value.trim();
 }
 
-function saveApi() {
-  localStorage.setItem('lottery_api', api());
+function saveApi(){
+  localStorage.setItem('lottery_api',api());
   loadAll();
 }
 
-async function get(action) {
-  if(!api()) throw new Error('Please specify the Apps Script /exec URL.');
-  const sep = api().includes('?') ? '&' : '?';
-  const r = await fetch(api() + sep + 'action=' + encodeURIComponent(action) + '&_=' + Date.now(), { cache: 'no-store', redirect: 'follow' });
-  const t = await r.text();
+async function get(action){
+  if(!api()) throw new Error('Please set Apps Script /exec URL.');
+
+  const sep=api().includes('?')?'&':'?';
+  const r=await fetch(
+    api()+sep+'action='+encodeURIComponent(action)+'&_='+Date.now(),
+    {cache:'no-store',redirect:'follow'}
+  );
+
+  const t=await r.text();
   let d;
-  try { d = JSON.parse(t); } catch(e) { throw new Error('Invalid JSON from script. Verify URL.'); }
-  if(!d.ok) throw new Error(d.error || 'Server error occurred.');
+
+  try{ d=JSON.parse(t); }
+  catch(e){
+    throw new Error('Apps Script did not return JSON. Check /exec deployment URL.');
+  }
+
+  if(!d.ok) throw new Error(d.error||'Request failed.');
   return d;
 }
 
-async function post(payload) {
-  if(!api()) throw new Error('Please specify the Apps Script /exec URL.');
-  const form = new URLSearchParams();
-  Object.keys(payload).forEach(k => {
-    form.append(k, typeof payload[k] === 'object' ? JSON.stringify(payload[k]) : String(payload[k]));
+async function post(payload){
+  if(!api()) throw new Error('Please set Apps Script /exec URL.');
+
+  // Apps Script-friendly normal form submission.
+  const form=new URLSearchParams();
+
+  Object.keys(payload).forEach(k=>{
+    const v=payload[k];
+    form.append(
+      k,
+      typeof v==='object'
+        ?JSON.stringify(v)
+        :String(v)
+    );
   });
 
-  const r = await fetch(api(), {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8' },
-    body: form.toString(),
-    redirect: 'follow'
+  const r=await fetch(api(),{
+    method:'POST',
+    headers:{
+      'Content-Type':'application/x-www-form-urlencoded;charset=UTF-8'
+    },
+    body:form.toString(),
+    redirect:'follow'
   });
 
-  const t = await r.text();
+  const t=await r.text();
   let d;
-  try { d = JSON.parse(t); } catch(e) { throw new Error('Invalid JSON returned on POST command.'); }
-  if(!d.ok) throw new Error(d.error || 'Request processing failed.');
+
+  try{ d=JSON.parse(t); }
+  catch(e){
+    throw new Error(
+      'Apps Script POST did not return JSON. Check deployment and authorization.'
+    );
+  }
+
+  if(!d.ok) throw new Error(d.error||'Request failed.');
   return d;
 }
 
-async function loadAll() {
-  if (isBusy) return;
+async function loadAll(){
   busy(true);
-  try {
-    setMsg('Connecting to Google Apps Script...', 'warn');
-    const status = await get('status');
-    const cd = await get('customers');
 
-    document.getElementById('total').textContent = fmt(status.totalTickets);
-    document.getElementById('unique').textContent = fmt(status.uniqueRight3);
+  try{
+    const status=await get('status');
+    const cd=await get('customers');
 
-    customers = cd.customers || [];
-    if(!customers.length) {
-      customers = [{ name:'PT', quantity:1200, right3Limit:2, allowExtraLimit:true, priority:1, active:true }];
+    document.getElementById('total').textContent=fmt(status.totalTickets);
+    document.getElementById('unique').textContent=fmt(status.uniqueRight3);
+
+    customers=cd.customers||[];
+
+    if(!customers.length){
+      customers=[
+        {
+          name:'PT',
+          quantity:1200,
+          right3Limit:2,
+          allowExtraLimit:true,
+          priority:1,
+          active:true
+        }
+      ];
     }
 
     renderCustomers();
     updateRequested();
 
-    const s = status.sheets || {};
+    const s=status.sheets||{};
+
     setMsg(
-      'Connected Successfully ✓\n' +
-      'Sheet Name: ' + (status.spreadsheetName || '') + '\n' +
-      'Tickets Loaded: ' + fmt(status.totalTickets) + '\n' +
-      'Allocation Target: ' + ((s.allocation && s.allocation.name) || 'PENDING') + '\n' +
-      'Distribution Target: ' + ((s.distribution && s.distribution.name) || 'PENDING'),
-      'good'
+      'Connected ✓\n'+
+      'Spreadsheet: '+(status.spreadsheetName||'')+'\n'+
+      'ID: '+(status.spreadsheetId||'')+'\n'+
+      'Tickets: '+fmt(status.totalTickets)+'\n'+
+      'Allocation sheet: '+((s.allocation&&s.allocation.name)||'NOT CREATED')+'\n'+
+      'Distribution_Result sheet: '+((s.distribution&&s.distribution.name)||'NOT CREATED')
     );
-  } catch(e) {
-    setMsg(e.message, 'bad');
-  } finally {
+
+  }catch(e){
+    setMsg(e.message,'bad');
+  }finally{
     busy(false);
   }
 }
 
-function addCustomer(data = {}) {
+function addCustomer(data={}){
   sync();
+
   customers.push({
-    name: data.name || '',
-    quantity: Number(data.quantity || 0),
-    right3Limit: Number(data.right3Limit || 1),
-    allowExtraLimit: data.allowExtraLimit !== false,
-    priority: Number(data.priority || customers.length + 1),
-    active: data.active !== false
+    name:data.name||'',
+    quantity:Number(data.quantity||0),
+    right3Limit:Number(data.right3Limit||1),
+    allowExtraLimit:data.allowExtraLimit!==false,
+    priority:Number(data.priority||customers.length+1),
+    active:data.active!==false
   });
+
   renderCustomers();
   updateRequested();
 }
 
-function removeCustomer(i) {
+function removeCustomer(i){
   sync();
-  customers.splice(i, 1);
+  customers.splice(i,1);
   renderCustomers();
   updateRequested();
 }
 
-function sync() {
-  const rows = [...document.querySelectorAll('#customers tr')];
-  customers = rows.map((tr, i) => ({
-    name: tr.querySelector('[data-k=name]').value.trim(),
-    quantity: Number(tr.querySelector('[data-k=quantity]').value || 0),
-    right3Limit: Number(tr.querySelector('[data-k=right3Limit]').value || 1),
-    allowExtraLimit: tr.querySelector('[data-k=allowExtraLimit]').checked,
-    priority: Number(tr.querySelector('[data-k=priority]').value || i + 1),
-    active: tr.querySelector('[data-k=active]').checked
+function sync(){
+  const rows=[...document.querySelectorAll('#customers tr')];
+
+  customers=rows.map((tr,i)=>({
+    name:tr.querySelector('[data-k=name]').value.trim(),
+    quantity:Number(tr.querySelector('[data-k=quantity]').value||0),
+    right3Limit:Number(tr.querySelector('[data-k=right3Limit]').value||1),
+    allowExtraLimit:tr.querySelector('[data-k=allowExtraLimit]').checked,
+    priority:Number(tr.querySelector('[data-k=priority]').value||i+1),
+    active:tr.querySelector('[data-k=active]').checked
   }));
 }
 
-function renderCustomers() {
-  const body = document.getElementById('customers');
-  body.innerHTML = customers.map((c, i) => `
+function renderCustomers(){
+  const body=document.getElementById('customers');
+
+  body.innerHTML=customers.map((c,i)=>`
     <tr>
-      <td><input data-k="name" type="text" value="${esc(c.name)}" placeholder="Customer Name"></td>
-      <td><input data-k="quantity" type="number" min="0" value="${c.quantity || 0}" oninput="updateRequested()"></td>
-      <td><input data-k="right3Limit" type="number" min="1" value="${c.right3Limit || 1}"></td>
-      <td><input data-k="allowExtraLimit" type="checkbox" ${c.allowExtraLimit !== false ? 'checked' : ''}></td>
-      <td><input data-k="priority" type="number" min="1" value="${c.priority || i + 1}"></td>
-      <td><input data-k="active" type="checkbox" ${c.active !== false ? 'checked' : ''} onchange="updateRequested()"></td>
-      <td><button class="danger" onclick="removeCustomer(${i})">X</button></td>
+      <td><input data-k="name" type="text" value="${esc(c.name)}"></td>
+      <td><input data-k="quantity" type="number" min="0" value="${c.quantity||0}" oninput="updateRequested()"></td>
+      <td><input data-k="right3Limit" type="number" min="1" value="${c.right3Limit||1}"></td>
+      <td><input data-k="allowExtraLimit" type="checkbox" ${c.allowExtraLimit!==false?'checked':''}></td>
+      <td><input data-k="priority" type="number" min="1" value="${c.priority||i+1}"></td>
+      <td><input data-k="active" type="checkbox" ${c.active!==false?'checked':''} onchange="updateRequested()"></td>
+      <td><button class="danger" onclick="removeCustomer(${i})">Delete</button></td>
     </tr>
   `).join('');
 }
 
-function updateRequested() {
-  try { sync(); } catch(e) {}
-  const total = customers.filter(c => c.active).reduce((s, c) => s + Number(c.quantity || 0), 0);
-  document.getElementById('requested').textContent = fmt(total);
+function updateRequested(){
+  try{sync()}catch(e){}
+
+  const total=customers
+    .filter(c=>c.active)
+    .reduce((s,c)=>s+Number(c.quantity||0),0);
+
+  document.getElementById('requested').textContent=fmt(total);
 }
 
-async function saveCustomers() {
-  if (isBusy) return;
-  sync(); busy(true);
-  try {
-    setMsg('Saving configuration...', 'warn');
-    const d = await post({ action: 'saveCustomers', customers: customers });
-    customers = d.customers || customers;
+async function saveCustomers(){
+  sync();
+  busy(true);
+
+  try{
+    const d=await post({
+      action:'saveCustomers',
+      customers:customers
+    });
+
+    customers=d.customers||customers;
     renderCustomers();
     updateRequested();
-    setMsg('Customers synchronized with Google Sheets ✓', 'good');
-  } catch(e) { setMsg(e.message, 'bad'); } 
-  finally { busy(false); }
-}
 
-async function writeTest() {
-  if (isBusy) return;
-  busy(true);
-  try {
-    setMsg('Testing Sheet Permissions...', 'warn');
-    const d = await post({ action: 'writeTest' });
-    const w = d.writeTest || {};
-    setMsg('WRITE VERIFIED ✓\nSheet ID: ' + (w.spreadsheetId || '') + '\nSuccessfully modified: ' + (w.allocationSheet || ''), 'good');
-  } catch(e) { setMsg('WRITE PERMISSION FAILED\n' + e.message, 'bad'); } 
-  finally { busy(false); }
-}
+    setMsg('Customers saved to Google Sheet ✓');
 
-async function allocate() {
-  if (isBusy) return;
-  sync(); busy(true);
-  try {
-    setMsg('Executing Allocation Algorithm...', 'warn');
-    await post({ action: 'saveCustomers', customers: customers });
-    const d = await post({ action: 'allocate', customers: customers });
-
-    const s = d.summary || {};
-    document.getElementById('remaining').textContent = fmt(d.remaining || 0);
-    document.getElementById('summary').textContent = 
-      'Tickets Sourced: ' + fmt(s.sourceTotal || 0) + 
-      ' | Allocated: ' + fmt(s.assignedTotal || 0) + 
-      ' | Leftovers: ' + fmt(s.remainingTotal || 0) + 
-      ' | Unique R3: ' + fmt(s.uniqueRight3InSource || 0);
-
-    renderResults(d.customers || []);
-    const av = (d.verified && d.verified.allocation) || {};
-    setMsg('DATA EXPORTED TO GOOGLE SHEETS ✓\nRows verified: ' + fmt(av.actualRows || 0), 'good');
-  } catch(e) { setMsg('ALLOCATION FAILED\n' + e.message, 'bad'); } 
-  finally { busy(false); }
-}
-
-function renderResults(list) {
-  document.getElementById('results').innerHTML = list.map(c => `
-    <div class="result">
-      <div class="row" style="justify-content:space-between; align-items:flex-start;">
-        <div>
-          <h3>${esc(c.name)} ${c.shortage ? '<span class="bad" style="font-size:0.8em; margin-left:8px;">Short ' + fmt(c.shortage) + '</span>' : '<span class="good" style="font-size:0.8em; margin-left:8px;">Complete</span>'}</h3>
-          <div class="muted">
-            <b>Req:</b> ${fmt(c.target)} &nbsp;·&nbsp; <b>Fulfilled:</b> ${fmt(c.assigned)} &nbsp;·&nbsp; 
-            <b>Unique R3s:</b> ${fmt(c.uniqueRight3)} &nbsp;·&nbsp; <b>Max Dupes:</b> ${c.maxRight3ActuallyUsed}
-          </div>
-          <div class="muted" style="margin-top:4px; font-family:monospace;">
-            [0xx:${c.right3HundredCounts?.['0']||0}] 
-            [1xx:${c.right3HundredCounts?.['1']||0}] 
-            [2xx:${c.right3HundredCounts?.['2']||0}] 
-            [3xx:${c.right3HundredCounts?.['3']||0}] 
-            [4xx:${c.right3HundredCounts?.['4']||0}] 
-            [5xx:${c.right3HundredCounts?.['5']||0}] 
-            [6xx:${c.right3HundredCounts?.['6']||0}] 
-            [7xx:${c.right3HundredCounts?.['7']||0}] 
-            [8xx:${c.right3HundredCounts?.['8']||0}] 
-            [9xx:${c.right3HundredCounts?.['9']||0}]
-          </div>
-        </div>
-        <button class="secondary" onclick='copyNums(${JSON.stringify(c.numbers || [])})'>Copy Results</button>
-      </div>
-      <div class="numbers">${(c.numbers || []).map(esc).join(', ')}</div>
-    </div>
-  `).join('');
-}
-
-async function clearOutput() {
-  if (isBusy) return;
-  busy(true);
-  try {
-    setMsg('Wiping output sheets...', 'warn');
-    const d = await post({ action: 'clearAllocation' });
-    document.getElementById('results').innerHTML = '';
-    document.getElementById('summary').textContent = 'Output sheets successfully wiped.';
-    document.getElementById('remaining').textContent = '—';
-    setMsg(d.message || 'Environment Cleared.', 'good');
-  } catch(e) { setMsg(e.message, 'bad'); } 
-  finally { busy(false); }
-}
-
-async function copyNums(nums) {
-  try {
-    await navigator.clipboard.writeText(nums.join('\n'));
-    setMsg('Copied ' + fmt(nums.length) + ' numbers to clipboard ✓', 'good');
-  } catch (err) {
-    setMsg('Failed to copy to clipboard.', 'bad');
+  }catch(e){
+    setMsg(e.message,'bad');
+  }finally{
+    busy(false);
   }
 }
 
-function busy(v) {
-  isBusy = v;
-  document.querySelectorAll('button').forEach(b => {
-    b.disabled = v;
-    if (v) b.classList.add('loading');
-    else b.classList.remove('loading');
-  });
+async function writeTest(){
+  busy(true);
+
+  try{
+    const d=await post({action:'writeTest'});
+    const w=d.writeTest||{};
+
+    setMsg(
+      'WRITE TEST PASSED ✓\n'+
+      'Spreadsheet: '+(w.spreadsheetName||'')+'\n'+
+      'ID: '+(w.spreadsheetId||'')+'\n'+
+      'Allocation: '+(w.allocationSheet||'')+'\n'+
+      'Distribution_Result: '+(w.distributionSheet||'')
+    );
+
+  }catch(e){
+    setMsg('WRITE TEST FAILED\n'+e.message,'bad');
+  }finally{
+    busy(false);
+  }
 }
 
-function setMsg(text, cls = '') {
-  const el = document.getElementById('msg');
-  el.className = 'notice ' + cls;
-  el.textContent = text;
+async function allocate(){
+  sync();
+  busy(true);
+
+  try{
+    await post({
+      action:'saveCustomers',
+      customers:customers
+    });
+
+    const d=await post({
+      action:'allocate',
+      customers:customers
+    });
+
+    const s=d.summary||{};
+
+    document.getElementById('remaining').textContent=
+      fmt(d.remaining||0);
+
+    document.getElementById('summary').textContent=
+      'Source: '+fmt(s.sourceTotal||0)+
+      ' | Requested: '+fmt(s.requestedTotal||0)+
+      ' | Assigned: '+fmt(s.assignedTotal||0)+
+      ' | Remaining: '+fmt(s.remainingTotal||0)+
+      ' | Unique Right3: '+fmt(s.uniqueRight3InSource||0);
+
+    renderResults(d.customers||[]);
+
+    const av=(d.verified&&d.verified.allocation)||{};
+    const dv=(d.verified&&d.verified.distribution)||{};
+
+    setMsg(
+      'SAVED TO GOOGLE SHEET ✓\n'+
+      'Allocation: '+fmt(av.actualRows||0)+' rows verified\n'+
+      'Distribution_Result: '+fmt(dv.actualTickets||0)+' tickets verified'
+    );
+
+  }catch(e){
+    setMsg('SAVE FAILED\n'+e.message,'bad');
+  }finally{
+    busy(false);
+  }
 }
 
-function fmt(n) { return Number(n || 0).toLocaleString(); }
+function renderResults(list){
+  document.getElementById('results').innerHTML=
+    list.map(c=>`
+      <div class="result">
+        <div class="row" style="justify-content:space-between">
+          <div>
+            <h3>${esc(c.name)} ${c.shortage?'<span class="bad">Short '+fmt(c.shortage)+'</span>':'<span class="good">Complete</span>'}</h3>
+            <div class="muted">
+              Target ${fmt(c.target)} · Assigned ${fmt(c.assigned)} ·
+              Unique Right3 ${fmt(c.uniqueRight3)} ·
+              Right3 rule ${String(c.name).trim().toUpperCase()==='PT'?'PT first: unique round → 2nd round → partial 3rd round':'Exact Right3 ×1 only'} ·
+              Unique Right3 ${fmt(c.uniqueRight3)} ·
+              Max same Right3 used ${c.maxRight3ActuallyUsed} ·
+              ${(c.hasAllRight3Hundreds || Number(c.target)<10)
+                ? '<span class="good">Right3 groups 0–9 ✓</span>'
+                : '<span class="bad">Missing Right3 groups: '+(c.missingRight3Hundreds||[]).join(',')+'</span>'}
+            </div>
+            <div class="muted" style="margin-top:5px">
+              Right3 0xx–9xx:
+              0:${c.right3HundredCounts?.['0']||0} ·
+              1:${c.right3HundredCounts?.['1']||0} ·
+              2:${c.right3HundredCounts?.['2']||0} ·
+              3:${c.right3HundredCounts?.['3']||0} ·
+              4:${c.right3HundredCounts?.['4']||0} ·
+              5:${c.right3HundredCounts?.['5']||0} ·
+              6:${c.right3HundredCounts?.['6']||0} ·
+              7:${c.right3HundredCounts?.['7']||0} ·
+              8:${c.right3HundredCounts?.['8']||0} ·
+              9:${c.right3HundredCounts?.['9']||0}
+            </div>
+          </div>
+          <button class="secondary" onclick='copyNums(${JSON.stringify(c.numbers||[])})'>Copy Numbers</button>
+        </div>
+        <div class="numbers">${(c.numbers||[]).map(esc).join('<br>')}</div>
+      </div>
+    `).join('');
+}
 
-function esc(v) {
-  return String(v ?? '')
-    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;').replace(/'/g, '&#039;');
+async function clearOutput(){
+  busy(true);
+
+  try{
+    const d=await post({action:'clearAllocation'});
+    document.getElementById('results').innerHTML='';
+    document.getElementById('summary').textContent='Output sheets cleared.';
+    document.getElementById('remaining').textContent='—';
+    setMsg(d.message||'Cleared.');
+  }catch(e){
+    setMsg(e.message,'bad');
+  }finally{
+    busy(false);
+  }
+}
+
+async function copyNums(nums){
+  await navigator.clipboard.writeText(nums.join('\n'));
+  setMsg('Copied '+fmt(nums.length)+' numbers.');
+}
+
+function busy(v){
+  document.querySelectorAll('button').forEach(b=>b.disabled=v);
+}
+
+function setMsg(text,cls=''){
+  const el=document.getElementById('msg');
+  el.className='notice '+cls;
+  el.textContent=text;
+}
+
+function fmt(n){
+  return Number(n||0).toLocaleString();
+}
+
+function esc(v){
+  return String(v??'')
+    .replace(/&/g,'&amp;')
+    .replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;')
+    .replace(/'/g,'&#039;');
 }
 </script>
 </body>
