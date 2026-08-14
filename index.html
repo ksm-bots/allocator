@@ -1,85 +1,573 @@
 <!doctype html>
 <html lang="en">
 <head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Thai Lottery Distributor V14</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Thai Lottery Distribution</title>
 <style>
-body{margin:0;background:#08111f;color:#f7f9ff;font-family:system-ui,Segoe UI,Arial,sans-serif}
-.wrap{max-width:1200px;margin:auto;padding:18px}.panel{background:#111d32;border:1px solid #2d4168;border-radius:14px;padding:16px;margin-bottom:14px}
-.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}.muted{color:#aebcda}.api{flex:1;min-width:280px}
-input,button{padding:10px 12px;border-radius:9px;font:inherit}input{background:#0b1629;color:#fff;border:1px solid #2d4168}
-button{border:0;background:#668cff;color:#fff;font-weight:700;cursor:pointer}button.secondary{background:#192844}button.danger{background:#983745}
-.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px}.stat{background:#111d32;border:1px solid #2d4168;border-radius:14px;padding:14px}.n{font-size:28px;font-weight:800}
-.notice{white-space:pre-wrap;background:#0c172b;border:1px solid #2d4168;border-radius:10px;padding:12px;color:#aebcda;margin-top:10px}
-table{width:100%;border-collapse:collapse;min-width:650px}th,td{padding:9px;border-bottom:1px solid #2d4168;text-align:left}.tablewrap{overflow:auto}
-.result{background:#192844;border-radius:12px;padding:14px;margin-top:10px}.numbers{background:#07101e;border-radius:9px;padding:10px;max-height:180px;overflow:auto;font-family:monospace;margin-top:8px}
-.good{color:#47db8d}.bad{color:#ff6f7d}@media(max-width:700px){.stats{grid-template-columns:repeat(2,1fr)}}@media(max-width:450px){.stats{grid-template-columns:1fr}}
+:root{
+  --bg:#09111f;
+  --panel:#121c31;
+  --panel2:#1a2743;
+  --line:#2c3b5f;
+  --text:#f7f9ff;
+  --muted:#afbdd8;
+  --brand:#7296ff;
+  --good:#42e18b;
+  --bad:#ff6d77;
+  --warn:#ffd166;
+}
+*{box-sizing:border-box}
+body{
+  margin:0;
+  background:var(--bg);
+  color:var(--text);
+  font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+}
+.wrap{
+  max-width:1250px;
+  margin:auto;
+  padding:18px;
+}
+.panel{
+  background:var(--panel);
+  border:1px solid var(--line);
+  border-radius:14px;
+  padding:16px;
+  margin-bottom:14px;
+}
+h1,h2,h3{margin:0 0 10px}
+.muted{color:var(--muted)}
+.row{
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+  align-items:center;
+}
+input,button{
+  border-radius:9px;
+  padding:10px 12px;
+  font:inherit;
+}
+input{
+  background:#0c1528;
+  color:white;
+  border:1px solid var(--line);
+}
+button{
+  border:0;
+  background:var(--brand);
+  color:white;
+  font-weight:700;
+  cursor:pointer;
+}
+button.secondary{background:var(--panel2)}
+button.danger{background:#9b3341}
+button:disabled{opacity:.5}
+.api{flex:1;min-width:280px}
+.notice{
+  margin-top:10px;
+  padding:12px;
+  border-radius:10px;
+  background:#0d172a;
+  border:1px solid var(--line);
+  color:var(--muted);
+  white-space:pre-wrap;
+}
+.good{color:var(--good)}
+.bad{color:var(--bad)}
+.warn{color:var(--warn)}
+.stats{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:10px;
+  margin-bottom:14px;
+}
+.stat{
+  background:var(--panel);
+  border:1px solid var(--line);
+  border-radius:14px;
+  padding:14px;
+}
+.stat .n{
+  font-size:28px;
+  font-weight:800;
+}
+.tablewrap{overflow:auto}
+table{
+  width:100%;
+  border-collapse:collapse;
+  min-width:850px;
+}
+th,td{
+  padding:9px;
+  border-bottom:1px solid var(--line);
+  text-align:left;
+}
+th{color:var(--muted);font-size:12px}
+td input[type=text]{width:145px}
+td input[type=number]{width:105px}
+.result{
+  background:var(--panel2);
+  border-radius:12px;
+  padding:14px;
+  margin-top:10px;
+}
+.numbers{
+  margin-top:9px;
+  max-height:220px;
+  overflow:auto;
+  background:#08111f;
+  border-radius:9px;
+  padding:10px;
+  font-family:monospace;
+  line-height:1.65;
+}
+@media(max-width:800px){
+  .stats{grid-template-columns:repeat(2,1fr)}
+}
+@media(max-width:500px){
+  .stats{grid-template-columns:1fr}
+}
 </style>
 </head>
-<body><div class="wrap">
-<h1>🎟️ Thai Lottery Distributor V14</h1>
-<p class="muted">Clean rebuild · PT first by exact Right3 rounds</p>
+<body>
+<div class="wrap">
+
+<h1>🎟️ Thai Lottery Distribution</h1>
+<p class="muted">
+Source: <b>Group!A2:J</b> · Output: <b>Allocation</b> + <b>Distribution_Result</b>
+</p>
 
 <div class="panel">
-<div class="row">
-<input id="api" class="api" placeholder="Apps Script /exec URL">
-<button onclick="saveApi()">Save API</button>
-<button class="secondary" onclick="loadAll()">Reload</button>
-<button class="secondary" onclick="writeTest()">Test Write</button>
-</div>
-<div id="msg" class="notice">Set Apps Script /exec URL.</div>
+  <div class="row">
+    <input id="api" class="api" placeholder="Apps Script /exec URL">
+    <button onclick="saveApi()">Save API</button>
+    <button class="secondary" onclick="loadAll()">Reload</button>
+    <button class="secondary" onclick="writeTest()">Test Sheet Write</button>
+  </div>
+  <div id="msg" class="notice">Paste your Apps Script /exec URL.</div>
 </div>
 
 <div class="stats">
-<div class="stat"><div class="muted">Tickets</div><div class="n" id="tickets">—</div></div>
-<div class="stat"><div class="muted">Unique Right3</div><div class="n" id="unique">—</div></div>
-<div class="stat"><div class="muted">Requested</div><div class="n" id="requested">0</div></div>
-<div class="stat"><div class="muted">Remaining</div><div class="n" id="remaining">—</div></div>
+  <div class="stat">
+    <div class="muted">Usable Tickets</div>
+    <div class="n" id="total">—</div>
+  </div>
+  <div class="stat">
+    <div class="muted">Unique Right3</div>
+    <div class="n" id="unique">—</div>
+  </div>
+  <div class="stat">
+    <div class="muted">Requested</div>
+    <div class="n" id="requested">0</div>
+  </div>
+  <div class="stat">
+    <div class="muted">Remaining</div>
+    <div class="n" id="remaining">—</div>
+  </div>
 </div>
 
 <div class="panel">
-<h2>PT Rule</h2>
-<div class="notice">Round 1 → PT gets 1 ticket from every unique Right3.
-Round 2 → PT gets 1 more from every Right3 with a second physical ticket.
-Round 3 → only the remaining amount PT needs, each from a different Right3 with a third physical ticket.
-Round 4+ → only if still needed.
+  <div class="row" style="justify-content:space-between">
+    <div>
+      <h2>Customers</h2>
+      <div class="muted">
+        PT FIRST: Round 1 gives PT one from every unique Right3. Round 2 gives one more from every Right3 with a real second copy. Round 3 gives only the remaining PT amount from different Right3 values with a third copy. Other customers are allocated only after PT is complete. </div>
+    </div>
+    <button onclick="addCustomer()">+ Add Customer</button>
+  </div>
 
-Other customers: exact Right3 maximum ×1 per customer. The same Right3 may go to different customers if real copies remain.</div>
+  <div class="tablewrap">
+    <table>
+      <thead>
+      <tr>
+        <th>Name</th>
+        <th>Quantity</th>
+        <th>PT Start Limit</th>
+        <th>Allow Extra</th>
+        <th>Priority</th>
+        <th>Active</th>
+        <th></th>
+      </tr>
+      </thead>
+      <tbody id="customers"></tbody>
+    </table>
+  </div>
+
+  <div class="row" style="margin-top:12px">
+    <button onclick="saveCustomers()">Save Customers</button>
+    <button onclick="allocate()">Allocate + Save to Sheets</button>
+    <button class="danger" onclick="clearOutput()">Clear Output Sheets</button>
+  </div>
 </div>
 
 <div class="panel">
-<div class="row" style="justify-content:space-between"><h2>Customers</h2><button onclick="addCustomer()">+ Add Customer</button></div>
-<div class="tablewrap"><table><thead><tr><th>Name</th><th>Quantity</th><th>Priority</th><th>Active</th><th></th></tr></thead><tbody id="body"></tbody></table></div>
-<div class="row" style="margin-top:12px">
-<button onclick="saveCustomers()">Save Customers</button>
-<button onclick="allocate()">Allocate + Save</button>
-<button class="danger" onclick="clearOutputs()">Clear Outputs</button>
-</div>
+  <h2>Distribution Result</h2>
+  <div id="summary" class="notice">No allocation yet.</div>
+  <div id="results"></div>
 </div>
 
-<div class="panel"><h2>Result</h2><div id="summary" class="notice">No allocation yet.</div><div id="results"></div></div>
 </div>
 
 <script>
-let customers=[];
-document.addEventListener('DOMContentLoaded',()=>{const s=localStorage.getItem('lotto_v14_api')||'';document.getElementById('api').value=s;if(s)loadAll();else{customers=[{name:'PT',quantity:1200,priority:1,active:true}];render()}});
-function api(){return document.getElementById('api').value.trim()}
-function saveApi(){localStorage.setItem('lotto_v14_api',api());loadAll()}
-async function get(a){const u=api();if(!u)throw new Error('Set /exec URL');const r=await fetch(u+(u.includes('?')?'&':'?')+'action='+encodeURIComponent(a)+'&_='+Date.now(),{cache:'no-store'});const t=await r.text();let d;try{d=JSON.parse(t)}catch(_){throw new Error('Invalid Apps Script response')}if(!d.ok)throw new Error(d.error||'Failed');return d}
-async function post(o){const u=api();if(!u)throw new Error('Set /exec URL');const f=new URLSearchParams();Object.entries(o).forEach(([k,v])=>f.append(k,typeof v==='object'?JSON.stringify(v):String(v)));const r=await fetch(u,{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded;charset=UTF-8'},body:f.toString()});const t=await r.text();let d;try{d=JSON.parse(t)}catch(_){throw new Error('Invalid Apps Script POST response')}if(!d.ok)throw new Error(d.error||'Failed');return d}
-async function loadAll(){try{const [s,c]=await Promise.all([get('status'),get('customers')]);document.getElementById('tickets').textContent=fmt(s.totalTickets);document.getElementById('unique').textContent=fmt(s.uniqueRight3);customers=c.customers||[];if(!customers.length)customers=[{name:'PT',quantity:1200,priority:1,active:true}];render();setMsg('Connected ✓\nSpreadsheet: '+s.spreadsheetName+'\nID: '+s.spreadsheetId+'\nTickets: '+fmt(s.totalTickets)+'\nUnique Right3: '+fmt(s.uniqueRight3)+'\nDepth: '+JSON.stringify(s.depthSummary))}catch(e){setMsg(e.message,'bad')}}
-function sync(){customers=[...document.querySelectorAll('#body tr')].map((tr,i)=>({name:tr.querySelector('[data-k=name]').value.trim(),quantity:Number(tr.querySelector('[data-k=quantity]').value||0),priority:Number(tr.querySelector('[data-k=priority]').value||i+1),active:tr.querySelector('[data-k=active]').checked}))}
-function render(){document.getElementById('body').innerHTML=customers.map((c,i)=>`<tr><td><input data-k="name" value="${esc(c.name)}"></td><td><input data-k="quantity" type="number" min="0" value="${c.quantity||0}" oninput="updateReq()"></td><td><input data-k="priority" type="number" min="1" value="${c.priority||i+1}"></td><td><input data-k="active" type="checkbox" ${c.active!==false?'checked':''} onchange="updateReq()"></td><td><button class="danger" onclick="removeCustomer(${i})">Delete</button></td></tr>`).join('');updateReq()}
-function addCustomer(){sync();customers.push({name:'',quantity:0,priority:customers.length+1,active:true});render()}
-function removeCustomer(i){sync();customers.splice(i,1);render()}
-function updateReq(){try{sync()}catch(_){ }document.getElementById('requested').textContent=fmt(customers.filter(c=>c.active).reduce((s,c)=>s+Number(c.quantity||0),0))}
-async function saveCustomers(){try{sync();const d=await post({action:'saveCustomers',customers});customers=d.customers||customers;render();setMsg('Customers saved ✓')}catch(e){setMsg(e.message,'bad')}}
-async function writeTest(){try{const d=await post({action:'writeTest'});setMsg('WRITE TEST PASSED ✓\nSpreadsheet: '+d.writeTest.spreadsheetName)}catch(e){setMsg('WRITE TEST FAILED\n'+e.message,'bad')}}
-async function allocate(){try{sync();await post({action:'saveCustomers',customers});const d=await post({action:'allocate',customers});const s=d.summary;document.getElementById('remaining').textContent=fmt(d.remaining);document.getElementById('summary').textContent='Source '+fmt(s.sourceTotal)+' | Unique '+fmt(s.uniqueRight3)+' | Requested '+fmt(s.requestedTotal)+' | Assigned '+fmt(s.assignedTotal)+' | Remaining '+fmt(s.remainingTotal);showResults(d.customers||[]);setMsg('SAVED + VERIFIED ✓\nAllocation rows: '+fmt(d.verified.allocationRows)+'\nDistribution_Result tickets: '+fmt(d.verified.distributionTickets))}catch(e){setMsg('SAVE FAILED\n'+e.message,'bad')}}
-function showResults(list){document.getElementById('results').innerHTML=list.map(c=>{const h=c.hundredCounts||{},u=c.right3UsageBreakdown||{};return `<div class="result"><h3>${esc(c.name)} ${c.shortage?'<span class="bad">Short '+fmt(c.shortage)+'</span>':'<span class="good">Complete</span>'}</h3><div class="muted">Target ${fmt(c.target)} · Assigned ${fmt(c.assigned)} · Unique Right3 ${fmt(c.uniqueRight3)} · Max same Right3 ${fmt(c.maxSameRight3)}</div>${String(c.name).toUpperCase()==='PT'?`<div class="muted">PT usage: ×1=${fmt(u['1']||0)} · ×2=${fmt(u['2']||0)} · ×3=${fmt(u['3']||0)} · ×4=${fmt(u['4']||0)}</div>`:''}<div class="muted">0xx:${fmt(h['0']||0)} · 1xx:${fmt(h['1']||0)} · 2xx:${fmt(h['2']||0)} · 3xx:${fmt(h['3']||0)} · 4xx:${fmt(h['4']||0)} · 5xx:${fmt(h['5']||0)} · 6xx:${fmt(h['6']||0)} · 7xx:${fmt(h['7']||0)} · 8xx:${fmt(h['8']||0)} · 9xx:${fmt(h['9']||0)}</div><div class="numbers">${(c.numbers||[]).map(esc).join('<br>')}</div></div>`}).join('')}
-async function clearOutputs(){try{const d=await post({action:'clear'});document.getElementById('results').innerHTML='';document.getElementById('summary').textContent='Outputs cleared.';setMsg(d.message)}catch(e){setMsg(e.message,'bad')}}
-function setMsg(t,c=''){const e=document.getElementById('msg');e.className='notice '+c;e.textContent=t}
-function fmt(v){return Number(v||0).toLocaleString()}
-function esc(v){return String(v??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#039;')}
+let customers = [];
+
+document.addEventListener('DOMContentLoaded',()=>{
+  const saved=localStorage.getItem('lottery_api')||'';
+  document.getElementById('api').value=saved;
+  if(saved) loadAll();
+  else renderCustomers();
+});
+
+function api(){
+  return document.getElementById('api').value.trim();
+}
+
+function saveApi(){
+  localStorage.setItem('lottery_api',api());
+  loadAll();
+}
+
+async function get(action){
+  if(!api()) throw new Error('Please set Apps Script /exec URL.');
+
+  const sep=api().includes('?')?'&':'?';
+  const r=await fetch(
+    api()+sep+'action='+encodeURIComponent(action)+'&_='+Date.now(),
+    {cache:'no-store',redirect:'follow'}
+  );
+
+  const t=await r.text();
+  let d;
+
+  try{ d=JSON.parse(t); }
+  catch(e){
+    throw new Error('Apps Script did not return JSON. Check /exec deployment URL.');
+  }
+
+  if(!d.ok) throw new Error(d.error||'Request failed.');
+  return d;
+}
+
+async function post(payload){
+  if(!api()) throw new Error('Please set Apps Script /exec URL.');
+
+  // Apps Script-friendly normal form submission.
+  const form=new URLSearchParams();
+
+  Object.keys(payload).forEach(k=>{
+    const v=payload[k];
+    form.append(
+      k,
+      typeof v==='object'
+        ?JSON.stringify(v)
+        :String(v)
+    );
+  });
+
+  const r=await fetch(api(),{
+    method:'POST',
+    headers:{
+      'Content-Type':'application/x-www-form-urlencoded;charset=UTF-8'
+    },
+    body:form.toString(),
+    redirect:'follow'
+  });
+
+  const t=await r.text();
+  let d;
+
+  try{ d=JSON.parse(t); }
+  catch(e){
+    throw new Error(
+      'Apps Script POST did not return JSON. Check deployment and authorization.'
+    );
+  }
+
+  if(!d.ok) throw new Error(d.error||'Request failed.');
+  return d;
+}
+
+async function loadAll(){
+  busy(true);
+
+  try{
+    const status=await get('status');
+    const cd=await get('customers');
+
+    document.getElementById('total').textContent=fmt(status.totalTickets);
+    document.getElementById('unique').textContent=fmt(status.uniqueRight3);
+
+    customers=cd.customers||[];
+
+    if(!customers.length){
+      customers=[
+        {
+          name:'PT',
+          quantity:1200,
+          right3Limit:2,
+          allowExtraLimit:true,
+          priority:1,
+          active:true
+        }
+      ];
+    }
+
+    renderCustomers();
+    updateRequested();
+
+    const s=status.sheets||{};
+
+    setMsg(
+      'Connected ✓\n'+
+      'Spreadsheet: '+(status.spreadsheetName||'')+'\n'+
+      'ID: '+(status.spreadsheetId||'')+'\n'+
+      'Tickets: '+fmt(status.totalTickets)+'\n'+
+      'Allocation sheet: '+((s.allocation&&s.allocation.name)||'NOT CREATED')+'\n'+
+      'Distribution_Result sheet: '+((s.distribution&&s.distribution.name)||'NOT CREATED')
+    );
+
+  }catch(e){
+    setMsg(e.message,'bad');
+  }finally{
+    busy(false);
+  }
+}
+
+function addCustomer(data={}){
+  sync();
+
+  customers.push({
+    name:data.name||'',
+    quantity:Number(data.quantity||0),
+    right3Limit:Number(data.right3Limit||1),
+    allowExtraLimit:data.allowExtraLimit!==false,
+    priority:Number(data.priority||customers.length+1),
+    active:data.active!==false
+  });
+
+  renderCustomers();
+  updateRequested();
+}
+
+function removeCustomer(i){
+  sync();
+  customers.splice(i,1);
+  renderCustomers();
+  updateRequested();
+}
+
+function sync(){
+  const rows=[...document.querySelectorAll('#customers tr')];
+
+  customers=rows.map((tr,i)=>({
+    name:tr.querySelector('[data-k=name]').value.trim(),
+    quantity:Number(tr.querySelector('[data-k=quantity]').value||0),
+    right3Limit:Number(tr.querySelector('[data-k=right3Limit]').value||1),
+    allowExtraLimit:tr.querySelector('[data-k=allowExtraLimit]').checked,
+    priority:Number(tr.querySelector('[data-k=priority]').value||i+1),
+    active:tr.querySelector('[data-k=active]').checked
+  }));
+}
+
+function renderCustomers(){
+  const body=document.getElementById('customers');
+
+  body.innerHTML=customers.map((c,i)=>`
+    <tr>
+      <td><input data-k="name" type="text" value="${esc(c.name)}"></td>
+      <td><input data-k="quantity" type="number" min="0" value="${c.quantity||0}" oninput="updateRequested()"></td>
+      <td><input data-k="right3Limit" type="number" min="1" value="${c.right3Limit||1}"></td>
+      <td><input data-k="allowExtraLimit" type="checkbox" ${c.allowExtraLimit!==false?'checked':''}></td>
+      <td><input data-k="priority" type="number" min="1" value="${c.priority||i+1}"></td>
+      <td><input data-k="active" type="checkbox" ${c.active!==false?'checked':''} onchange="updateRequested()"></td>
+      <td><button class="danger" onclick="removeCustomer(${i})">Delete</button></td>
+    </tr>
+  `).join('');
+}
+
+function updateRequested(){
+  try{sync()}catch(e){}
+
+  const total=customers
+    .filter(c=>c.active)
+    .reduce((s,c)=>s+Number(c.quantity||0),0);
+
+  document.getElementById('requested').textContent=fmt(total);
+}
+
+async function saveCustomers(){
+  sync();
+  busy(true);
+
+  try{
+    const d=await post({
+      action:'saveCustomers',
+      customers:customers
+    });
+
+    customers=d.customers||customers;
+    renderCustomers();
+    updateRequested();
+
+    setMsg('Customers saved to Google Sheet ✓');
+
+  }catch(e){
+    setMsg(e.message,'bad');
+  }finally{
+    busy(false);
+  }
+}
+
+async function writeTest(){
+  busy(true);
+
+  try{
+    const d=await post({action:'writeTest'});
+    const w=d.writeTest||{};
+
+    setMsg(
+      'WRITE TEST PASSED ✓\n'+
+      'Spreadsheet: '+(w.spreadsheetName||'')+'\n'+
+      'ID: '+(w.spreadsheetId||'')+'\n'+
+      'Allocation: '+(w.allocationSheet||'')+'\n'+
+      'Distribution_Result: '+(w.distributionSheet||'')
+    );
+
+  }catch(e){
+    setMsg('WRITE TEST FAILED\n'+e.message,'bad');
+  }finally{
+    busy(false);
+  }
+}
+
+async function allocate(){
+  sync();
+  busy(true);
+
+  try{
+    await post({
+      action:'saveCustomers',
+      customers:customers
+    });
+
+    const d=await post({
+      action:'allocate',
+      customers:customers
+    });
+
+    const s=d.summary||{};
+
+    document.getElementById('remaining').textContent=
+      fmt(d.remaining||0);
+
+    document.getElementById('summary').textContent=
+      'Source: '+fmt(s.sourceTotal||0)+
+      ' | Requested: '+fmt(s.requestedTotal||0)+
+      ' | Assigned: '+fmt(s.assignedTotal||0)+
+      ' | Remaining: '+fmt(s.remainingTotal||0)+
+      ' | Unique Right3: '+fmt(s.uniqueRight3InSource||0);
+
+    renderResults(d.customers||[]);
+
+    const av=(d.verified&&d.verified.allocation)||{};
+    const dv=(d.verified&&d.verified.distribution)||{};
+
+    setMsg(
+      'SAVED TO GOOGLE SHEET ✓\n'+
+      'Allocation: '+fmt(av.actualRows||0)+' rows verified\n'+
+      'Distribution_Result: '+fmt(dv.actualTickets||0)+' tickets verified'
+    );
+
+  }catch(e){
+    setMsg('SAVE FAILED\n'+e.message,'bad');
+  }finally{
+    busy(false);
+  }
+}
+
+function renderResults(list){
+  document.getElementById('results').innerHTML=
+    list.map(c=>`
+      <div class="result">
+        <div class="row" style="justify-content:space-between">
+          <div>
+            <h3>${esc(c.name)} ${c.shortage?'<span class="bad">Short '+fmt(c.shortage)+'</span>':'<span class="good">Complete</span>'}</h3>
+            <div class="muted">
+              Target ${fmt(c.target)} · Assigned ${fmt(c.assigned)} ·
+              Unique Right3 ${fmt(c.uniqueRight3)} ·
+              Right3 rule ${String(c.name).trim().toUpperCase()==='PT'?'PT first: unique round → 2nd round → partial 3rd round':'Exact Right3 ×1 only'} ·
+              Unique Right3 ${fmt(c.uniqueRight3)} ·
+              Max same Right3 used ${c.maxRight3ActuallyUsed} ·
+              ${(c.hasAllRight3Hundreds || Number(c.target)<10)
+                ? '<span class="good">Right3 groups 0–9 ✓</span>'
+                : '<span class="bad">Missing Right3 groups: '+(c.missingRight3Hundreds||[]).join(',')+'</span>'}
+            </div>
+            <div class="muted" style="margin-top:5px">
+              Right3 0xx–9xx:
+              0:${c.right3HundredCounts?.['0']||0} ·
+              1:${c.right3HundredCounts?.['1']||0} ·
+              2:${c.right3HundredCounts?.['2']||0} ·
+              3:${c.right3HundredCounts?.['3']||0} ·
+              4:${c.right3HundredCounts?.['4']||0} ·
+              5:${c.right3HundredCounts?.['5']||0} ·
+              6:${c.right3HundredCounts?.['6']||0} ·
+              7:${c.right3HundredCounts?.['7']||0} ·
+              8:${c.right3HundredCounts?.['8']||0} ·
+              9:${c.right3HundredCounts?.['9']||0}
+            </div>
+          </div>
+          <button class="secondary" onclick='copyNums(${JSON.stringify(c.numbers||[])})'>Copy Numbers</button>
+        </div>
+        <div class="numbers">${(c.numbers||[]).map(esc).join('<br>')}</div>
+      </div>
+    `).join('');
+}
+
+async function clearOutput(){
+  busy(true);
+
+  try{
+    const d=await post({action:'clearAllocation'});
+    document.getElementById('results').innerHTML='';
+    document.getElementById('summary').textContent='Output sheets cleared.';
+    document.getElementById('remaining').textContent='—';
+    setMsg(d.message||'Cleared.');
+  }catch(e){
+    setMsg(e.message,'bad');
+  }finally{
+    busy(false);
+  }
+}
+
+async function copyNums(nums){
+  await navigator.clipboard.writeText(nums.join('\n'));
+  setMsg('Copied '+fmt(nums.length)+' numbers.');
+}
+
+function busy(v){
+  document.querySelectorAll('button').forEach(b=>b.disabled=v);
+}
+
+function setMsg(text,cls=''){
+  const el=document.getElementById('msg');
+  el.className='notice '+cls;
+  el.textContent=text;
+}
+
+function fmt(n){
+  return Number(n||0).toLocaleString();
+}
+
+function esc(v){
+  return String(v??'')
+    .replace(/&/g,'&amp;')
+    .replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;')
+    .replace(/'/g,'&#039;');
+}
 </script>
-</body></html>
+</body>
+</html>
