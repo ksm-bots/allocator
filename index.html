@@ -173,7 +173,7 @@ Source: <b>Group!A2:J</b> · Output: <b>Allocation</b> + <b>Distribution_Result<
     <div>
       <h2>Customers</h2>
       <div class="muted">
-        PT FIRST: PT keeps the priority round system. Then Love Right3 preference runs for AQ / HOM / MF440: when preferred Right3 values exist in the CURRENT Group, each can receive up to 2 matching tickets. After that, all other allocation uses adaptive fair sharing from the current Group data. Exact Right3 duplicates are still spread fairly across customers. </div>
+        PT FIRST is unchanged. Love Right3 is editable per non-PT customer below. When a favorite exists in the CURRENT Group, the system gives up to that customer's Love Max amount before normal adaptive fair sharing. The result shows exactly how many Love Right3 tickets each customer got. </div>
     </div>
     <button onclick="addCustomer()">+ Add Customer</button>
   </div>
@@ -188,6 +188,9 @@ Source: <b>Group!A2:J</b> · Output: <b>Allocation</b> + <b>Distribution_Result<
         <th>Allow Extra</th>
         <th>Priority</th>
         <th>Active</th>
+        <th>Love Right3 Favorites</th>
+        <th>Love Max</th>
+        <th>Love Got</th>
         <th></th>
       </tr>
       </thead>
@@ -220,6 +223,7 @@ Source: <b>Group!A2:J</b> · Output: <b>Allocation</b> + <b>Distribution_Result<
 const DEFAULT_API_URL = 'https://script.google.com/macros/s/AKfycbwzTUHnD_7QW1nxkQb1BDeiuahq_g83qrXw6WuIN3TLYY1KJj6q1xn3Kekqirh_Pus/exec';
 
 let customers = [];
+let loveGotByCustomer = {};
 
 document.addEventListener('DOMContentLoaded',()=>{
   const saved=localStorage.getItem('lottery_api')||'';
@@ -364,7 +368,9 @@ function addCustomer(data={}){
     right3Limit:Number(data.right3Limit||1),
     allowExtraLimit:data.allowExtraLimit!==false,
     priority:Number(data.priority||customers.length+1),
-    active:data.active!==false
+    active:data.active!==false,
+    loveRight3:Array.isArray(data.loveRight3)?data.loveRight3:parseLoveRight3(data.loveRight3||''),
+    loveMaxMatches:Number(data.loveMaxMatches??2)
   });
 
   renderCustomers();
@@ -387,7 +393,9 @@ function sync(){
     right3Limit:Number(tr.querySelector('[data-k=right3Limit]').value||1),
     allowExtraLimit:tr.querySelector('[data-k=allowExtraLimit]').checked,
     priority:Number(tr.querySelector('[data-k=priority]').value||i+1),
-    active:tr.querySelector('[data-k=active]').checked
+    active:tr.querySelector('[data-k=active]').checked,
+    loveRight3:parseLoveRight3(tr.querySelector('[data-k=loveRight3]')?.value||''),
+    loveMaxMatches:Number(tr.querySelector('[data-k=loveMaxMatches]')?.value||0)
   }));
 }
 
@@ -402,9 +410,24 @@ function renderCustomers(){
       <td><input data-k="allowExtraLimit" type="checkbox" ${c.allowExtraLimit!==false?'checked':''}></td>
       <td><input data-k="priority" type="number" min="1" value="${c.priority||i+1}"></td>
       <td><input data-k="active" type="checkbox" ${c.active!==false?'checked':''} onchange="updateRequested()"></td>
+      <td>${String(c.name||'').trim().toUpperCase()==='PT'
+        ? '<span class="muted">PT unchanged</span>'
+        : `<textarea data-k="loveRight3" rows="3" style="min-width:260px" placeholder="023 061 097 ..." oninput="updateLoveCount(this)">${esc((c.loveRight3||[]).join(' '))}</textarea><div class="muted"><span data-love-count>${fmt((c.loveRight3||[]).length)}</span> favorites</div>`}
+      </td>
+      <td>${String(c.name||'').trim().toUpperCase()==='PT'
+        ? '<span class="muted">—</span>'
+        : `<input data-k="loveMaxMatches" type="number" min="0" max="20" value="${Number(c.loveMaxMatches??2)}" style="width:75px">`}
+      </td>
+      <td><strong class="good">${String(c.name||'').trim().toUpperCase()==='PT'?'—':fmt(loveGotByCustomer[String(c.name||'').trim().toUpperCase()]||0)}</strong></td>
       <td><button class="danger" onclick="removeCustomer(${i})">Delete</button></td>
     </tr>
   `).join('');
+}
+
+function updateLoveCount(el){
+  const cell=el.closest('td');
+  const out=cell?.querySelector('[data-love-count]');
+  if(out) out.textContent=fmt(parseLoveRight3(el.value).length);
 }
 
 function updateRequested(){
@@ -489,6 +512,9 @@ async function allocate(){
       ' | Remaining: '+fmt(s.remainingTotal||0)+
       ' | Unique Right3: '+fmt(s.uniqueRight3InSource||0);
 
+    loveGotByCustomer={};
+    (d.customers||[]).forEach(c=>{ loveGotByCustomer[String(c.name||'').trim().toUpperCase()]=Number(c.loveMatchCount||0); });
+    renderCustomers();
     renderResults(d.customers||[]);
 
     const av=(d.verified&&d.verified.allocation)||{};
@@ -520,7 +546,14 @@ function renderResults(list){
               Right3 rule ${String(c.name).trim().toUpperCase()==='PT'?'PT first: unique round → 2nd round → partial next rounds':('Unique ×1 first; repeat only if short (max used ×'+fmt(c.maxRight3ActuallyUsed)+')')} ·
               Unique Right3 ${fmt(c.uniqueRight3)} ·
               Max same Right3 used ${c.maxRight3ActuallyUsed} ·
-              <span class="good">Adaptive Group fair share ✓</span> · ${c.loveMatchCount?`<span class="good">Love Right3 ${fmt(c.loveMatchCount)}: ${(c.loveRight3Matches||[]).map(esc).join(", ")}</span>`:"Love Right3: 0"}
+              <span class="good">Adaptive Group fair share ✓</span>
+            </div>
+            ${String(c.name||'').trim().toUpperCase()==='PT' ? '' : `
+            <div class="notice" style="margin-top:8px;padding:10px">
+              ❤️ <strong>Love Right3 Got: ${fmt(c.loveMatchCount||0)} / ${fmt(c.loveMaxMatches||0)}</strong>
+              ${c.loveMatchCount?` — ${(c.loveRight3Matches||[]).map(esc).join(', ')}`:' — no favorite was available/selected'}
+              <div class="muted" style="margin-top:4px">Configured favorites: ${fmt(c.loveConfiguredCount||0)}</div>
+            </div>`}
             </div>
             <div class="muted" style="margin-top:5px">
               Right3 share from current Group:
@@ -572,6 +605,16 @@ function setMsg(text,cls=''){
   const el=document.getElementById('msg');
   el.className='notice '+cls;
   el.textContent=text;
+}
+
+function parseLoveRight3(value){
+  const seen=new Set();
+  return String(Array.isArray(value)?value.join(' '):(value||''))
+    .split(/[\s,;|]+/)
+    .map(v=>v.trim())
+    .filter(v=>/^\d{1,3}$/.test(v))
+    .map(v=>v.padStart(3,'0'))
+    .filter(v=>{if(seen.has(v))return false;seen.add(v);return true;});
 }
 
 function fmt(n){
