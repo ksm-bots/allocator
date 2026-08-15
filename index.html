@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Thai Lottery Distribution</title>
+<title>Thai Lottery Distribution v13</title>
 <style>
 :root{
   --bg:#09111f;
@@ -134,7 +134,7 @@ td input[type=number]{width:105px}
 <body>
 <div class="wrap">
 
-<h1>🎟️ Thai Lottery Distribution</h1>
+<h1>🎟️ Thai Lottery Distribution <span style="font-size:.45em;color:var(--muted)">v12</span></h1>
 <p class="muted">
 Source: <b>Group!A2:J</b> · Output: <b>Allocation</b> + <b>Distribution_Result</b>
 </p>
@@ -173,7 +173,7 @@ Source: <b>Group!A2:J</b> · Output: <b>Allocation</b> + <b>Distribution_Result<
     <div>
       <h2>Customers</h2>
       <div class="muted">
-        PT FIRST: Round 1 gives PT one from every unique Right3. Round 2 gives one more from every Right3 with a real second copy. Round 3 gives only the remaining PT amount from different Right3 values with a third copy. Other customers are allocated only after PT is complete. </div>
+        PT FIRST: Round 1 gives PT one from every unique Right3. Round 2 gives one more from every Right3 with a real second copy. Round 3 gives only the remaining PT amount from different Right3 values with a third copy. Other customers are allocated only after PT is complete. They use unique Right3 ×1 first; if still short, only the minimum necessary Right3 values repeat ×2, then ×3 only if required. </div>
     </div>
     <button onclick="addCustomer()">+ Add Customer</button>
   </div>
@@ -211,12 +211,21 @@ Source: <b>Group!A2:J</b> · Output: <b>Allocation</b> + <b>Distribution_Result<
 </div>
 
 <script>
+// ============================================================
+// GITHUB PAGES CONFIGURATION
+// Paste your deployed Google Apps Script /exec URL below once.
+// Example: https://script.google.com/macros/s/XXXXX/exec
+// Leave blank if you prefer to enter it from the webpage.
+// ============================================================
+const DEFAULT_API_URL = 'https://script.google.com/macros/s/AKfycbwzTUHnD_7QW1nxkQb1BDeiuahq_g83qrXw6WuIN3TLYY1KJj6q1xn3Kekqirh_Pus/exec';
+
 let customers = [];
 
 document.addEventListener('DOMContentLoaded',()=>{
   const saved=localStorage.getItem('lottery_api')||'';
-  document.getElementById('api').value=saved;
-  if(saved) loadAll();
+  const initialApi=(saved || DEFAULT_API_URL || '').trim();
+  document.getElementById('api').value=initialApi;
+  if(initialApi) loadAll();
   else renderCustomers();
 });
 
@@ -225,12 +234,22 @@ function api(){
 }
 
 function saveApi(){
-  localStorage.setItem('lottery_api',api());
+  const url=api();
+  if(!url){
+    localStorage.removeItem('lottery_api');
+    setMsg('Please enter your deployed Google Apps Script /exec URL.','bad');
+    return;
+  }
+  if(!/^https:\/\/script\.google\.com\/macros\/s\/.+\/exec(?:\?.*)?$/i.test(url)){
+    setMsg('The API URL does not look like a deployed Apps Script /exec URL.','bad');
+    return;
+  }
+  localStorage.setItem('lottery_api',url);
   loadAll();
 }
 
 async function get(action){
-  if(!api()) throw new Error('Please set Apps Script /exec URL.');
+  if(!api()) throw new Error('Please set the deployed Google Apps Script /exec URL.');
 
   const sep=api().includes('?')?'&':'?';
   const r=await fetch(
@@ -243,7 +262,7 @@ async function get(action){
 
   try{ d=JSON.parse(t); }
   catch(e){
-    throw new Error('Apps Script did not return JSON. Check /exec deployment URL.');
+    throw new Error('Apps Script did not return JSON (HTTP '+r.status+'). Check the deployed /exec URL. Response: '+t.slice(0,160));
   }
 
   if(!d.ok) throw new Error(d.error||'Request failed.');
@@ -251,7 +270,7 @@ async function get(action){
 }
 
 async function post(payload){
-  if(!api()) throw new Error('Please set Apps Script /exec URL.');
+  if(!api()) throw new Error('Please set the deployed Google Apps Script /exec URL.');
 
   // Apps Script-friendly normal form submission.
   const form=new URLSearchParams();
@@ -281,7 +300,7 @@ async function post(payload){
   try{ d=JSON.parse(t); }
   catch(e){
     throw new Error(
-      'Apps Script POST did not return JSON. Check deployment and authorization.'
+      'Apps Script POST did not return JSON (HTTP '+r.status+'). Check that you are using the deployed /exec URL and access is set to Anyone. Response: '+t.slice(0,160)
     );
   }
 
@@ -323,6 +342,7 @@ async function loadAll(){
       'Connected ✓\n'+
       'Spreadsheet: '+(status.spreadsheetName||'')+'\n'+
       'ID: '+(status.spreadsheetId||'')+'\n'+
+      'API version: '+(status.version||'unknown')+'\n'+
       'Tickets: '+fmt(status.totalTickets)+'\n'+
       'Allocation sheet: '+((s.allocation&&s.allocation.name)||'NOT CREATED')+'\n'+
       'Distribution_Result sheet: '+((s.distribution&&s.distribution.name)||'NOT CREATED')
@@ -497,7 +517,7 @@ function renderResults(list){
             <div class="muted">
               Target ${fmt(c.target)} · Assigned ${fmt(c.assigned)} ·
               Unique Right3 ${fmt(c.uniqueRight3)} ·
-              Right3 rule ${String(c.name).trim().toUpperCase()==='PT'?'PT first: unique round → 2nd round → partial 3rd round':'Exact Right3 ×1 only'} ·
+              Right3 rule ${String(c.name).trim().toUpperCase()==='PT'?'PT first: unique round → 2nd round → partial next rounds':('Unique ×1 first; repeat only if short (max used ×'+fmt(c.maxRight3ActuallyUsed)+')')} ·
               Unique Right3 ${fmt(c.uniqueRight3)} ·
               Max same Right3 used ${c.maxRight3ActuallyUsed} ·
               ${(c.hasAllRight3Hundreds || Number(c.target)<10)
