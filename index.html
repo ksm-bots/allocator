@@ -173,7 +173,7 @@ Source: <b>Group!A2:J</b> · Output: <b>Allocation</b> + <b>Distribution_Result<
     <div>
       <h2>Customers</h2>
       <div class="muted">
-        PT FIRST is unchanged. Love Right3 is editable per non-PT customer below. When a favorite exists in the CURRENT Group, the system gives up to that customer's Love Max amount before normal adaptive fair sharing. The result shows exactly how many Love Right3 tickets each customer got. </div>
+        PT FIRST is unchanged. Love Right3 is editable per non-PT customer below. When a favorite exists in the CURRENT Group, the system gives up to that customer's Love Target amount before normal adaptive fair sharing. Different favorites are used first, then the same favorite Right3 may be used again up to Love Same Max when real physical copies exist. The result shows exactly how many Love Right3 tickets each customer got. </div>
     </div>
     <button onclick="addCustomer()">+ Add Customer</button>
   </div>
@@ -189,7 +189,8 @@ Source: <b>Group!A2:J</b> · Output: <b>Allocation</b> + <b>Distribution_Result<
         <th>Priority</th>
         <th>Active</th>
         <th>Love Right3 Favorites</th>
-        <th>Love Max</th>
+        <th>Love Target</th>
+        <th>Love Same Max</th>
         <th>Love Got</th>
         <th></th>
       </tr>
@@ -370,7 +371,8 @@ function addCustomer(data={}){
     priority:Number(data.priority||customers.length+1),
     active:data.active!==false,
     loveRight3:Array.isArray(data.loveRight3)?data.loveRight3:parseLoveRight3(data.loveRight3||''),
-    loveMaxMatches:Number(data.loveMaxMatches??2)
+    loveMaxMatches:Number(data.loveMaxMatches??20),
+    loveSameMax:Number(data.loveSameMax??2)
   });
 
   renderCustomers();
@@ -395,7 +397,8 @@ function sync(){
     priority:Number(tr.querySelector('[data-k=priority]').value||i+1),
     active:tr.querySelector('[data-k=active]').checked,
     loveRight3:parseLoveRight3(tr.querySelector('[data-k=loveRight3]')?.value||''),
-    loveMaxMatches:Number(tr.querySelector('[data-k=loveMaxMatches]')?.value||0)
+    loveMaxMatches:Number(tr.querySelector('[data-k=loveMaxMatches]')?.value||0),
+    loveSameMax:Number(tr.querySelector('[data-k=loveSameMax]')?.value||2)
   }));
 }
 
@@ -416,7 +419,11 @@ function renderCustomers(){
       </td>
       <td>${String(c.name||'').trim().toUpperCase()==='PT'
         ? '<span class="muted">—</span>'
-        : `<input data-k="loveMaxMatches" type="number" min="0" max="20" value="${Number(c.loveMaxMatches??2)}" style="width:75px">`}
+        : `<input data-k="loveMaxMatches" type="number" min="0" max="9999" value="${Number(c.loveMaxMatches??20)}" style="width:85px">`}
+      </td>
+      <td>${String(c.name||'').trim().toUpperCase()==='PT'
+        ? '<span class="muted">—</span>'
+        : `<input data-k="loveSameMax" type="number" min="1" max="20" value="${Number(c.loveSameMax??2)}" style="width:75px">`}
       </td>
       <td><strong class="good">${String(c.name||'').trim().toUpperCase()==='PT'?'—':fmt(loveGotByCustomer[String(c.name||'').trim().toUpperCase()]||0)}</strong></td>
       <td><button class="danger" onclick="removeCustomer(${i})">Delete</button></td>
@@ -550,7 +557,7 @@ function renderResults(list){
             </div>
             ${String(c.name||'').trim().toUpperCase()==='PT' ? '' : `
             <div class="notice" style="margin-top:8px;padding:10px">
-              ❤️ <strong>Love Right3 Got: ${fmt(c.loveMatchCount||0)} / ${fmt(c.loveMaxMatches||0)}</strong>
+              ❤️ <strong>Love Right3 Got: ${fmt(c.loveMatchCount||0)} / ${fmt(c.loveMaxMatches||0)}</strong> <span class="muted">(same favorite max ${fmt(c.loveSameMax||2)})</span>
               ${c.loveMatchCount?` — ${(c.loveRight3Matches||[]).map(esc).join(', ')}`:' — no favorite was available/selected'}
               <div class="muted" style="margin-top:4px">Configured favorites: ${fmt(c.loveConfiguredCount||0)}</div>
             </div>`}
