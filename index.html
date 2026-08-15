@@ -173,7 +173,7 @@ Source: <b>Group!A2:J</b> · Output: <b>Allocation</b> + <b>Distribution_Result<
     <div>
       <h2>Customers</h2>
       <div class="muted">
-        PT FIRST: PT keeps the priority round system. After PT, other customers use adaptive fair sharing from the CURRENT Group sheet. If this draw contains more 9xx (or any other Right3 hundred group), that larger stock is shared proportionally across customers. Exact Right3 duplicates are spread to different customers at ×1 before the same customer receives ×2, then ×3 only when still required. </div>
+        PT FIRST: PT keeps the priority round system. Then Love Right3 preference runs for AQ / HOM / MF440: when preferred Right3 values exist in the CURRENT Group, each can receive up to 2 matching tickets. After that, all other allocation uses adaptive fair sharing from the current Group data. Exact Right3 duplicates are still spread fairly across customers. </div>
     </div>
     <button onclick="addCustomer()">+ Add Customer</button>
   </div>
@@ -520,7 +520,7 @@ function renderResults(list){
               Right3 rule ${String(c.name).trim().toUpperCase()==='PT'?'PT first: unique round → 2nd round → partial next rounds':('Unique ×1 first; repeat only if short (max used ×'+fmt(c.maxRight3ActuallyUsed)+')')} ·
               Unique Right3 ${fmt(c.uniqueRight3)} ·
               Max same Right3 used ${c.maxRight3ActuallyUsed} ·
-              <span class="good">Adaptive Group fair share ✓</span>
+              <span class="good">Adaptive Group fair share ✓</span> · ${c.loveMatchCount?`<span class="good">Love Right3 ${fmt(c.loveMatchCount)}: ${(c.loveRight3Matches||[]).map(esc).join(", ")}</span>`:"Love Right3: 0"}
             </div>
             <div class="muted" style="margin-top:5px">
               Right3 share from current Group:
