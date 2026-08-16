@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Thai Lottery Distribution v18</title>
+<title>Thai Lottery Distribution v19</title>
 <style>
 :root{
   --bg:#09111f;
@@ -141,7 +141,7 @@ td input[type=number]{width:105px}
 <body>
 <div class="wrap">
 
-<h1>🎟️ Thai Lottery Distribution <span style="font-size:.45em;color:var(--muted)">v18</span></h1>
+<h1>🎟️ Thai Lottery Distribution <span style="font-size:.45em;color:var(--muted)">v19</span></h1>
 <p class="muted">
 Source: <b>Group!A2:J</b> · Output: <b>Allocation</b> + <b>Distribution_Result</b>
 </p>
@@ -227,8 +227,17 @@ Source: <b>Group!A2:J</b> · Output: <b>Allocation</b> + <b>Distribution_Result<
 </div>
 
 <div class="panel">
-  <h2>Distribution Result</h2>
-  <div id="summary" class="notice">No allocation yet.</div>
+  <div class="row" style="justify-content:space-between;align-items:center;gap:12px">
+    <h2 style="margin:0">Distribution Result</h2>
+    <div class="row" style="align-items:center;gap:8px">
+      <label for="resultCustomer" class="muted" style="font-weight:700">Customer</label>
+      <select id="resultCustomer" onchange="filterDistributionResult()" style="min-width:190px">
+        <option value="__ALL__">All Customers</option>
+      </select>
+    </div>
+  </div>
+  <div id="summary" class="notice" style="margin-top:12px">No allocation yet.</div>
+  <div id="selectedCustomerSummary"></div>
   <div id="results"></div>
 </div>
 
@@ -246,6 +255,8 @@ const DEFAULT_API_URL = 'https://script.google.com/macros/s/AKfycbwzTUHnD_7QW1nx
 let customers = [];
 let loveGotByCustomer = {};
 let usableTickets = null;
+let lastDistributionResults = [];
+let lastDistributionSummary = null;
 
 document.addEventListener('DOMContentLoaded',()=>{
   const saved=localStorage.getItem('lottery_api')||'';
@@ -590,7 +601,10 @@ async function allocate(){
     loveGotByCustomer={};
     (d.customers||[]).forEach(c=>{ loveGotByCustomer[String(c.name||'').trim().toUpperCase()]=Number(c.loveMatchCount||0); });
     renderCustomers();
-    renderResults(d.customers||[]);
+    lastDistributionResults = d.customers || [];
+    lastDistributionSummary = s;
+    populateResultCustomerDropdown(lastDistributionResults);
+    filterDistributionResult();
 
     const av=(d.verified&&d.verified.allocation)||{};
     const dv=(d.verified&&d.verified.distribution)||{};
@@ -608,7 +622,59 @@ async function allocate(){
   }
 }
 
-function renderResults(list){
+function populateResultCustomerDropdown(list){
+  const sel=document.getElementById('resultCustomer');
+  if(!sel) return;
+  const old=sel.value || '__ALL__';
+  sel.innerHTML='<option value="__ALL__">All Customers</option>'+
+    (list||[]).map(c=>`<option value="${escAttr(String(c.name||''))}">${esc(c.name||'')}</option>`).join('');
+  const exists=old==='__ALL__' || (list||[]).some(c=>String(c.name||'')===old);
+  sel.value=exists?old:'__ALL__';
+}
+
+function filterDistributionResult(){
+  const sel=document.getElementById('resultCustomer');
+  const selected=sel ? sel.value : '__ALL__';
+  const list=lastDistributionResults || [];
+  const summaryBox=document.getElementById('selectedCustomerSummary');
+
+  if(selected==='__ALL__'){
+    if(summaryBox) summaryBox.innerHTML='';
+    renderResults(list);
+    return;
+  }
+
+  const c=list.find(x=>String(x.name||'')===selected);
+  if(!c){
+    if(summaryBox) summaryBox.innerHTML='';
+    renderResults([]);
+    return;
+  }
+
+  const isPT=String(c.name||'').trim().toUpperCase()==='PT';
+  const h=c.right3HundredCounts||{};
+  if(summaryBox){
+    summaryBox.innerHTML=`
+      <div class="notice" style="margin-top:10px">
+        <div class="row" style="justify-content:space-between;align-items:flex-start;gap:12px">
+          <div>
+            <div style="font-size:1.15rem;font-weight:800">👤 ${esc(c.name)}</div>
+            <div style="margin-top:6px">
+              Target <b>${fmt(c.target)}</b> · Assigned <b>${fmt(c.assigned)}</b> ·
+              ${c.shortage?`<span class="bad"><b>Short ${fmt(c.shortage)}</b></span>`:'<span class="good"><b>Complete ✓</b></span>'} ·
+              Unique Right3 <b>${fmt(c.uniqueRight3)}</b> · Max same Right3 used <b>${fmt(c.maxRight3ActuallyUsed||0)}</b>
+            </div>
+            ${isPT?'':`<div style="margin-top:6px">❤️ Love Got <b>${fmt(c.loveMatchCount||0)} / ${fmt(c.loveMaxMatches||0)}</b>${c.loveMatchCount?` — ${(c.loveRight3Matches||[]).map(esc).join(', ')}`:''}</div>`}
+            <div class="muted" style="margin-top:6px">Right3 share: 0xx ${h['0']||0} · 1xx ${h['1']||0} · 2xx ${h['2']||0} · 3xx ${h['3']||0} · 4xx ${h['4']||0} · 5xx ${h['5']||0} · 6xx ${h['6']||0} · 7xx ${h['7']||0} · 8xx ${h['8']||0} · 9xx ${h['9']||0}</div>
+          </div>
+          <button class="secondary" onclick='copyNums(${JSON.stringify(c.numbers||[])})'>Copy ${fmt((c.numbers||[]).length)} Numbers</button>
+        </div>
+      </div>`;
+  }
+  renderResults([c], true);
+}
+
+function renderResults(list, compactSelected=false){
   document.getElementById('results').innerHTML=
     list.map(c=>`
       <div class="result">
@@ -617,7 +683,6 @@ function renderResults(list){
             <h3>${esc(c.name)} ${c.shortage?'<span class="bad">Short '+fmt(c.shortage)+'</span>':'<span class="good">Complete</span>'}</h3>
             <div class="muted">
               Target ${fmt(c.target)} · Assigned ${fmt(c.assigned)} ·
-              Unique Right3 ${fmt(c.uniqueRight3)} ·
               Right3 rule ${String(c.name).trim().toUpperCase()==='PT'?'PT first: unique round → 2nd round → partial next rounds':('Unique ×1 first; repeat only if short (max used ×'+fmt(c.maxRight3ActuallyUsed)+')')} ·
               Unique Right3 ${fmt(c.uniqueRight3)} ·
               Max same Right3 used ${c.maxRight3ActuallyUsed} ·
@@ -629,7 +694,6 @@ function renderResults(list){
               ${c.loveMatchCount?` — ${(c.loveRight3Matches||[]).map(esc).join(', ')}`:' — no favorite was available/selected'}
               <div class="muted" style="margin-top:4px">Configured favorites: ${fmt(c.loveConfiguredCount||0)}</div>
             </div>`}
-            </div>
             <div class="muted" style="margin-top:5px">
               Right3 share from current Group:
               0:${c.right3HundredCounts?.['0']||0} ·
@@ -644,7 +708,7 @@ function renderResults(list){
               9:${c.right3HundredCounts?.['9']||0}
             </div>
           </div>
-          <button class="secondary" onclick='copyNums(${JSON.stringify(c.numbers||[])})'>Copy Numbers</button>
+          ${compactSelected?'':`<button class="secondary" onclick='copyNums(${JSON.stringify(c.numbers||[])})'>Copy Numbers</button>`}
         </div>
         <div class="numbers">${(c.numbers||[]).map(esc).join('<br>')}</div>
       </div>
@@ -656,6 +720,10 @@ async function clearOutput(){
 
   try{
     const d=await post({action:'clearAllocation'});
+    lastDistributionResults=[];
+    lastDistributionSummary=null;
+    populateResultCustomerDropdown([]);
+    document.getElementById('selectedCustomerSummary').innerHTML='';
     document.getElementById('results').innerHTML='';
     document.getElementById('summary').textContent='Output sheets cleared.';
     document.getElementById('remaining').textContent='—';
@@ -704,6 +772,7 @@ function esc(v){
     .replace(/"/g,'&quot;')
     .replace(/'/g,'&#039;');
 }
+function escAttr(v){ return esc(v).replace(/`/g,'&#96;'); }
 </script>
 </body>
 </html>
